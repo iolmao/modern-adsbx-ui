@@ -35,5 +35,5 @@ export const MAX_SPEED_FOR_TRAIL = 500; // knots
 // Stale aircraft timeout (seconds)
 export const STALE_TIMEOUT = 300; // 5 minutes
 
-// Circular buffer size for position history
-export const POSITION_HISTORY_SIZE = 60;
+// Circular buffer size for position history (300 = ~5 minutes at 1 update/sec)
+export const POSITION_HISTORY_SIZE = 300;

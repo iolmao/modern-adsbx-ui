@@ -39,23 +39,15 @@ export function useAircraftHistory() {
         };
 
         aircraftHistory.push(newPos);
-
-        // Trim to circular buffer size
-        if (aircraftHistory.length > POSITION_HISTORY_SIZE) {
-          aircraftHistory.shift();
-        }
+        // No limit - trail lives until aircraft disappears
       }
     });
 
-    // Cleanup stale aircraft
+    // Cleanup aircraft that are no longer active (immediate deletion)
     const activeHexes = new Set(aircraft.map((ac) => ac.hex));
     Object.keys(history).forEach((hex) => {
       if (!activeHexes.has(hex)) {
-        const aircraftHistory = history[hex];
-        const lastPos = aircraftHistory[aircraftHistory.length - 1];
-        if (lastPos && currentTime - lastPos.timestamp > STALE_TIMEOUT) {
-          delete history[hex];
-        }
+        delete history[hex];
       }
     });
   }, [aircraft, timestamp]);

@@ -99,3 +99,37 @@ html, body, #root {
 .dark .maplibregl-popup-tip {
   border-top-color: rgba(24, 24, 27, 0.95) !important;
 }
+
+/* Settings panel animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* Aircraft detail popup - ensure it's above trails */
+.maplibregl-popup {
+  z-index: 10 !important;
+}

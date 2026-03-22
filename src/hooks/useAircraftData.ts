@@ -23,6 +23,7 @@ export function useAircraftData() {
         url = url.replace(/\/$/, '');
         url = `${url}/tar1090/data/aircraft.json`;
       }
+
       const response = await fetch(url);
 
       if (!response.ok) {

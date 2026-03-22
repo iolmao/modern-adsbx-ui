@@ -1,4 +1,4 @@
-export type TileLayerType = 'carto-dark' | 'carto-light' | 'osm' | 'esri-satellite' | 'stadia-dark';
+export type TileLayerType = 'osm' | 'stamen-dark' | 'esri-satellite';
 export type DisplayUnits = 'nautical' | 'metric' | 'imperial';
 export type NightMode = 'auto' | 'light' | 'dark';
 

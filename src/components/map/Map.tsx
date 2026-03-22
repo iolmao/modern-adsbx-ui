@@ -9,7 +9,7 @@ import { useAircraftHistory } from '@/hooks/useAircraftHistory';
 import { AircraftMarker } from './AircraftMarker';
 import { AircraftDot } from './AircraftDot';
 import { AircraftLabel } from './AircraftLabel';
-import { AircraftTrails } from './AircraftTrails';
+import { AircraftTrailsCanvas } from './AircraftTrailsCanvas';
 import { AircraftDetailPanel } from '@/components/aircraft/AircraftDetailPanel';
 
 export function Map() {
@@ -65,10 +65,10 @@ export function Map() {
         }}
         style={{ width: '100%', height: '100%' }}
       >
-        <NavigationControl position="top-right" />
+        <NavigationControl position="bottom-left" />
 
-        {/* Aircraft trails - visible in both modes if enabled */}
-        {showTrails && <AircraftTrails aircraft={aircraft} history={history} />}
+        {/* Aircraft trails - shown based on showTrails setting and selected aircraft */}
+        <AircraftTrailsCanvas aircraft={aircraft} history={history} />
 
         {/* Aircraft markers/dots */}
         {aircraft.map((ac) => {

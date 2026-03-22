@@ -3,6 +3,7 @@ import { Marker } from 'react-map-gl/maplibre';
 import type { EnhancedAircraft } from '@/types/aircraft';
 import { useConfigStore } from '@/store/configStore';
 import { EMERGENCY_COLOR } from '@/lib/colors/emergency';
+import { getAircraftIcon } from '@/lib/icons/aircraftIcon';
 
 interface AircraftMarkerProps {
   aircraft: EnhancedAircraft;
@@ -15,8 +16,8 @@ export const AircraftMarker = memo(({ aircraft, onClick }: AircraftMarkerProps) 
   if (aircraft.lat === undefined || aircraft.lon === undefined) return null;
 
   const rotation = aircraft.track ?? 0;
+  const iconPath = getAircraftIcon(aircraft.category);
   const color = aircraft.isEmergency ? EMERGENCY_COLOR : aircraftIconColor;
-  const borderColor = aircraft.isEmergency ? EMERGENCY_COLOR : 'none';
 
   return (
     <Marker
@@ -37,36 +38,51 @@ export const AircraftMarker = memo(({ aircraft, onClick }: AircraftMarkerProps) 
       >
         {aircraft.isEmergency && (
           <div
-            className="absolute inset-0 rounded-full border-2"
+            className="absolute inset-0 rounded-full border-2 animate-pulse"
             style={{
               borderColor: EMERGENCY_COLOR,
-              transform: 'scale(1.2)',
+              transform: 'scale(1.3)',
             }}
           />
         )}
-        <svg
-          width="100%"
-          height="100%"
-          viewBox="0 0 512 512"
+        {/* Bordo scuro (layer sotto) */}
+        <div
           style={{
-            transform: `rotate(${rotation}deg)`,
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            transform: `rotate(${rotation}deg) scale(1.4)`,
+            maskImage: `url(${iconPath})`,
+            WebkitMaskImage: `url(${iconPath})`,
+            maskSize: 'contain',
+            WebkitMaskSize: 'contain',
+            maskRepeat: 'no-repeat',
+            WebkitMaskRepeat: 'no-repeat',
+            maskPosition: 'center',
+            WebkitMaskPosition: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            filter: 'blur(1px)',
           }}
-        >
-          <path
-            fill={color}
-            stroke="rgba(0,0,0,0.5)"
-            strokeWidth="8"
-            d="M511.06,286.261c-0.387-10.849-7.42-20.615-18.226-25.356l-193.947-74.094
-              C298.658,78.15,285.367,3.228,256.001,3.228c-29.366,0-42.657,74.922-42.885,183.583L19.167,260.904
-              C8.345,265.646,1.33,275.412,0.941,286.261L0.008,311.97c-0.142,3.886,1.657,7.623,4.917,10.188
-              c3.261,2.564,7.597,3.684,11.845,3.049c0,0,151.678-22.359,198.037-29.559c1.85,82.016,4.019,127.626,4.019,127.626l-51.312,24.166
-              c-6.046,2.38-10.012,8.206-10.012,14.701v9.465c0,4.346,1.781,8.505,4.954,11.493c3.155,2.987,7.403,4.539,11.74,4.292l64.83-3.667
-              c2.08,14.436,8.884,25.048,16.975,25.048c8.091,0,14.877-10.612,16.975-25.048l64.832,3.667c4.336,0.246,8.584-1.305,11.738-4.292
-              c3.174-2.988,4.954-7.148,4.954-11.493v-9.465c0-6.495-3.966-12.321-10.012-14.701l-51.329-24.166c0,0,2.186-45.61,4.037-127.626
-              c46.358,7.2,198.036,29.559,198.036,29.559c4.248,0.635,8.602-0.485,11.845-3.049c3.261-2.565,5.041-6.302,4.918-10.188
-              L511.06,286.261z"
-          />
-        </svg>
+        />
+        {/* Icona principale con ombra */}
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            transform: `rotate(${rotation}deg)`,
+            maskImage: `url(${iconPath})`,
+            WebkitMaskImage: `url(${iconPath})`,
+            maskSize: 'contain',
+            WebkitMaskSize: 'contain',
+            maskRepeat: 'no-repeat',
+            WebkitMaskRepeat: 'no-repeat',
+            maskPosition: 'center',
+            WebkitMaskPosition: 'center',
+            backgroundColor: color,
+            filter: 'drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.9))',
+          }}
+        />
       </div>
     </Marker>
   );

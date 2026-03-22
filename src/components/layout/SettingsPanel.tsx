@@ -11,8 +11,6 @@ export function SettingsPanel() {
   const config = useConfigStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  if (!settingsPanelOpen) return null;
-
   const handleExport = () => {
     const { updateConfig, resetConfig, ...configToExport } = config;
     exportConfig(configToExport);
@@ -32,11 +30,20 @@ export function SettingsPanel() {
 
   return (
     <>
+      {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 z-40"
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-200 ${
+          settingsPanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={() => setSettingsPanelOpen(false)}
       />
-      <div className="fixed right-0 top-0 bottom-0 w-96 bg-background/95 backdrop-blur-md border-l border-border/50 z-50 overflow-y-auto text-foreground">
+
+      {/* Settings Panel */}
+      <div
+        className={`fixed right-4 top-20 bottom-4 w-96 bg-background/95 backdrop-blur-md border border-border/50 rounded-xl z-50 overflow-y-auto text-foreground shadow-2xl transition-transform duration-300 ease-out ${
+          settingsPanelOpen ? 'translate-x-0' : 'translate-x-[calc(100%+1rem)]'
+        }`}
+      >
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold text-foreground">Settings</h2>

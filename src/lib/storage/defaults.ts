@@ -4,7 +4,7 @@ export const DEFAULT_CONFIG: UserConfig = {
   tar1090Url: '',
   userLat: null,
   userLon: null,
-  tileLayer: 'carto-dark',
+  tileLayer: 'osm',
   aircraftIconColor: '#ffffff',
   useProportionalSize: true,
   fixedAircraftSize: 14,

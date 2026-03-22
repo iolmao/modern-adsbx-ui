@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg height="800px" width="800px" version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+<svg height="800px" width="800px" version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
 	 viewBox="0 0 512 512"  xml:space="preserve">
+<defs>
+	<filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+		<feDropShadow dx="4" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.7"/>
+	</filter>
+</defs>
 <style type="text/css">
-	.st0{fill:#000000;}
+	.st0{fill:#000000;stroke:#000000;stroke-width:24;stroke-opacity:0.5;}
 </style>
-<g>
+<g filter="url(#shadow)">
 	<path class="st0" d="M511.06,286.261c-0.387-10.849-7.42-20.615-18.226-25.356l-193.947-74.094
 		C298.658,78.15,285.367,3.228,256.001,3.228c-29.366,0-42.657,74.922-42.885,183.583L19.167,260.904
 		C8.345,265.646,1.33,275.412,0.941,286.261L0.008,311.97c-0.142,3.886,1.657,7.623,4.917,10.188
