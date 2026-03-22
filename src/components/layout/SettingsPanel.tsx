@@ -98,7 +98,7 @@ export function SettingsPanel() {
               <select
                 value={config.tileLayer}
                 onChange={(e) => config.updateConfig({ tileLayer: e.target.value as typeof config.tileLayer })}
-                className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
+                className="w-full pl-3 pr-10 py-2 bg-background border border-border rounded-md text-foreground appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpolyline%20points%3D%222%2C4%206%2C8%2010%2C4%22%20fill%3D%22none%22%20stroke%3D%22%23999%22%20stroke-width%3D%221.25%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_0.75rem_center] bg-no-repeat"
               >
                 {TILE_LAYERS.map((layer) => (
                   <option key={layer.id} value={layer.id}>
@@ -109,51 +109,95 @@ export function SettingsPanel() {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block text-foreground">Aircraft Icon Color</label>
-              <input
-                type="color"
-                value={config.aircraftIconColor}
-                onChange={(e) => config.updateConfig({ aircraftIconColor: e.target.value })}
-                className="w-full h-10 bg-background border border-border rounded-md cursor-pointer"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block text-foreground">Trail Gradient</label>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Start</label>
-                  <input
-                    type="color"
-                    value={config.trailGradient.start}
-                    onChange={(e) => config.updateConfig({
-                      trailGradient: { ...config.trailGradient, start: e.target.value }
-                    })}
-                    className="w-full h-10 bg-background border border-border rounded-md cursor-pointer"
-                  />
+              <label className="text-sm font-medium mb-3 block text-foreground">Colors</label>
+              <div className="space-y-3">
+                {/* Aircraft Icon Color */}
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <label
+                      htmlFor="aircraft-color-picker"
+                      className="cursor-pointer inline-block hover:opacity-80 transition-opacity"
+                    >
+                      <svg
+                        width="28"
+                        height="28"
+                        viewBox="0 0 512 512"
+                        style={{ transform: 'rotate(45deg)' }}
+                      >
+                        <path
+                          fill={config.aircraftIconColor}
+                          d="M511.06,286.261c-0.387-10.849-7.42-20.615-18.226-25.356l-193.947-74.094C298.658,78.15,285.367,3.228,256.001,3.228c-29.366,0-42.657,74.922-42.885,183.583L19.167,260.904C8.345,265.646,1.33,275.412,0.941,286.261L0.008,311.97c-0.142,3.886,1.657,7.623,4.917,10.188c3.261,2.564,7.597,3.684,11.845,3.049c0,0,151.678-22.359,198.037-29.559c1.85,82.016,4.019,127.626,4.019,127.626l-51.312,24.166c-6.046,2.38-10.012,8.206-10.012,14.701v9.465c0,4.346,1.781,8.505,4.954,11.493c3.155,2.987,7.403,4.539,11.74,4.292l64.83-3.667c2.08,14.436,8.884,25.048,16.975,25.048c8.091,0,14.877-10.612,16.975-25.048l64.832,3.667c4.336,0.246,8.584-1.305,11.738-4.292c3.174-2.988,4.954-7.148,4.954-11.493v-9.465c0-6.495-3.966-12.321-10.012-14.701l-51.329-24.166c0,0,2.186-45.61,4.037-127.626c46.358,7.2,198.036,29.559,198.036,29.559c4.248,0.635,8.602-0.485,11.845-3.049c3.261-2.565,5.041-6.302,4.918-10.188L511.06,286.261z"
+                        />
+                      </svg>
+                    </label>
+                    <input
+                      id="aircraft-color-picker"
+                      type="color"
+                      value={config.aircraftIconColor}
+                      onChange={(e) => config.updateConfig({ aircraftIconColor: e.target.value })}
+                      className="absolute top-0 left-0 w-7 h-7 opacity-0 cursor-pointer"
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground">Aircraft icon color</span>
                 </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">End</label>
-                  <input
-                    type="color"
-                    value={config.trailGradient.end}
-                    onChange={(e) => config.updateConfig({
-                      trailGradient: { ...config.trailGradient, end: e.target.value }
-                    })}
-                    className="w-full h-10 bg-background border border-border rounded-md cursor-pointer"
-                  />
+
+                {/* Trail Color */}
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <label
+                      htmlFor="trail-color-picker"
+                      className="cursor-pointer inline-block w-5 h-5 rounded border border-border hover:border-foreground transition-colors"
+                      style={{ backgroundColor: config.trailColor }}
+                    />
+                    <input
+                      id="trail-color-picker"
+                      type="color"
+                      value={config.trailColor}
+                      onChange={(e) => config.updateConfig({ trailColor: e.target.value })}
+                      className="absolute top-0 left-0 w-5 h-5 opacity-0 cursor-pointer"
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground">Trail color</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-foreground">Show Labels</label>
-              <input
-                type="checkbox"
-                checked={config.showLabels}
-                onChange={(e) => config.updateConfig({ showLabels: e.target.checked })}
-                className="w-4 h-4 cursor-pointer"
-              />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-foreground">Show Labels</label>
+                <input
+                  type="checkbox"
+                  checked={config.showLabels}
+                  onChange={(e) => config.updateConfig({ showLabels: e.target.checked })}
+                  className="w-4 h-4 cursor-pointer"
+                />
+              </div>
+
+              <div className={`flex items-center justify-between pl-6 ${!config.showLabels ? 'opacity-50' : ''}`}>
+                <label className={`text-sm text-muted-foreground ${!config.showLabels ? 'cursor-not-allowed' : ''}`}>
+                  Display name
+                </label>
+                <input
+                  type="checkbox"
+                  checked={config.showNameInLabel}
+                  onChange={(e) => config.updateConfig({ showNameInLabel: e.target.checked })}
+                  disabled={!config.showLabels}
+                  className="w-4 h-4 cursor-pointer disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <div className={`flex items-center justify-between pl-6 ${!config.showLabels ? 'opacity-50' : ''}`}>
+                <label className={`text-sm text-muted-foreground ${!config.showLabels ? 'cursor-not-allowed' : ''}`}>
+                  Display distance
+                </label>
+                <input
+                  type="checkbox"
+                  checked={config.showDistanceInLabel}
+                  onChange={(e) => config.updateConfig({ showDistanceInLabel: e.target.checked })}
+                  disabled={!config.showLabels}
+                  className="w-4 h-4 cursor-pointer disabled:cursor-not-allowed"
+                />
+              </div>
             </div>
 
             <div className="flex items-center justify-between">
@@ -171,7 +215,7 @@ export function SettingsPanel() {
               <select
                 value={config.displayUnits}
                 onChange={(e) => config.updateConfig({ displayUnits: e.target.value as typeof config.displayUnits })}
-                className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
+                className="w-full pl-3 pr-10 py-2 bg-background border border-border rounded-md text-foreground appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpolyline%20points%3D%222%2C4%206%2C8%2010%2C4%22%20fill%3D%22none%22%20stroke%3D%22%23999%22%20stroke-width%3D%221.25%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_0.75rem_center] bg-no-repeat"
               >
                 <option value="nautical">Nautical</option>
                 <option value="metric">Metric</option>
@@ -184,7 +228,7 @@ export function SettingsPanel() {
               <select
                 value={config.nightMode}
                 onChange={(e) => config.updateConfig({ nightMode: e.target.value as typeof config.nightMode })}
-                className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
+                className="w-full pl-3 pr-10 py-2 bg-background border border-border rounded-md text-foreground appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpolyline%20points%3D%222%2C4%206%2C8%2010%2C4%22%20fill%3D%22none%22%20stroke%3D%22%23999%22%20stroke-width%3D%221.25%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_0.75rem_center] bg-no-repeat"
               >
                 <option value="auto">Auto (System)</option>
                 <option value="light">Light</option>

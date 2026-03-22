@@ -9,13 +9,17 @@ interface AircraftLabelProps {
 }
 
 export const AircraftLabel = memo(({ aircraft }: AircraftLabelProps) => {
-  const { displayUnits } = useConfigStore();
+  const { displayUnits, showNameInLabel, showDistanceInLabel } = useConfigStore();
 
   if (aircraft.lat === undefined || aircraft.lon === undefined) return null;
 
-  const distanceText = aircraft.distance
+  const nameText = showNameInLabel ? aircraft.displayName : '';
+  const distanceText = aircraft.distance && showDistanceInLabel
     ? formatDistanceBrief(aircraft.distance, displayUnits)
     : '';
+
+  // Don't render if both are hidden
+  if (!nameText && !distanceText) return null;
 
   return (
     <Marker
@@ -25,8 +29,9 @@ export const AircraftLabel = memo(({ aircraft }: AircraftLabelProps) => {
       offset={[0, (aircraft.iconSize / 2) + 4]}
     >
       <div className="text-white text-xs font-mono border border-gray-400 px-2 py-1 rounded bg-black/50 backdrop-blur-sm whitespace-nowrap pointer-events-none">
-        {aircraft.displayName}
-        {distanceText && ` · ${distanceText}`}
+        {nameText}
+        {nameText && distanceText && ' · '}
+        {distanceText}
       </div>
     </Marker>
   );

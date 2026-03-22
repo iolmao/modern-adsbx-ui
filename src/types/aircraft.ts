@@ -69,7 +69,6 @@ export interface EnhancedAircraft extends Aircraft {
   isEmergency: boolean;           // true if squawk 7700/7600/7500
   displayName: string;            // flight || hex
   iconSize: number;               // 6-22px calculated
-  trailColor: string;             // Color hex from gradient
   trailLength: number;            // Trail length (10-60 positions)
 }
 

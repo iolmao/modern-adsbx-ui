@@ -12,8 +12,8 @@ interface AircraftTrailsCanvasProps {
 
 export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvasProps) {
   const { current: mapInstance } = useMap();
-  const { showTrails } = useConfigStore();
-  const { selectedAircraftHex } = useUIStore();
+  const { showTrails, trailColor } = useConfigStore();
+  const { selectedAircraftHex, viewMode } = useUIStore();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -22,7 +22,7 @@ export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvas
   // Mark for redraw when data changes
   useEffect(() => {
     needsRedrawRef.current = true;
-  }, [aircraft, history, showTrails, selectedAircraftHex]);
+  }, [aircraft, history, showTrails, selectedAircraftHex, trailColor, viewMode]);
 
   useEffect(() => {
     if (!mapInstance) return;
@@ -36,7 +36,7 @@ export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvas
       canvas.style.top = '0';
       canvas.style.left = '0';
       canvas.style.pointerEvents = 'none';
-      canvas.style.zIndex = '1';
+      canvas.style.zIndex = '0';
       canvasRef.current = canvas;
 
       const mapContainer = map.getContainer();
@@ -68,16 +68,17 @@ export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvas
 
       // Draw trails based on settings
       aircraft.forEach((ac) => {
-        // Show trail only if:
+        // Show trail if:
+        // - viewMode is realistic (always show all trails), OR
         // - showTrails is enabled (show all), OR
         // - this aircraft is selected (show only selected)
-        const shouldShowTrail = showTrails || ac.hex === selectedAircraftHex;
+        const shouldShowTrail = viewMode === 'realistic' || showTrails || ac.hex === selectedAircraftHex;
         if (!shouldShowTrail) return;
 
         const trail = history[ac.hex];
         if (!trail || trail.length < 2) return;
 
-        const color = ac.isEmergency ? EMERGENCY_COLOR : ac.trailColor;
+        const color = ac.isEmergency ? EMERGENCY_COLOR : trailColor;
 
         // Start drawing
         ctx.beginPath();
@@ -135,7 +136,7 @@ export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvas
         canvasRef.current = null;
       }
     };
-  }, [mapInstance, aircraft, history, showTrails, selectedAircraftHex]);
+  }, [mapInstance, aircraft, history, showTrails, selectedAircraftHex, trailColor]);
 
   return null;
 }

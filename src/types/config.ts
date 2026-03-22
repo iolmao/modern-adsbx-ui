@@ -15,11 +15,13 @@ export interface UserConfig {
   userLon: number | null;
   tileLayer: TileLayerType;
   aircraftIconColor: string;
+  trailColor: string;
   useProportionalSize: boolean;
   fixedAircraftSize: number;
   showLabels: boolean;
+  showNameInLabel: boolean;
+  showDistanceInLabel: boolean;
   showTrails: boolean;
-  trailGradient: { start: string; end: string };
   displayUnits: DisplayUnits;
   nightMode: NightMode;
   refreshInterval: number;

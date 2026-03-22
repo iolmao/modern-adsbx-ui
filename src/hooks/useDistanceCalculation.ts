@@ -4,7 +4,6 @@ import { useConfigStore } from '@/store/configStore';
 import type { EnhancedAircraft } from '@/types/aircraft';
 import { haversineDistance, calculateBearing } from '@/lib/geo/haversine';
 import { isEmergencySquawk } from '@/constants/emergencyCodes';
-import { getAltitudeColor } from '@/lib/colors/altitudeGradient';
 import {
   MIN_ICON_SIZE,
   MAX_ICON_SIZE,
@@ -31,7 +30,7 @@ function calculateTrailLength(groundSpeed: number | undefined): number {
 
 export function useEnhancedAircraft(): EnhancedAircraft[] {
   const { aircraft } = useAircraftStore();
-  const { userLat, userLon, trailGradient, useProportionalSize, fixedAircraftSize } = useConfigStore();
+  const { userLat, userLon, useProportionalSize, fixedAircraftSize } = useConfigStore();
 
   return useMemo(() => {
     return aircraft.map((ac): EnhancedAircraft => {
@@ -46,7 +45,6 @@ export function useEnhancedAircraft(): EnhancedAircraft[] {
       const isEmergency = isEmergencySquawk(ac.squawk);
       const displayName = ac.flight?.trim() || ac.hex;
       const iconSize = calculateIconSize(ac.alt_baro, useProportionalSize, fixedAircraftSize);
-      const trailColor = getAltitudeColor(ac.alt_baro, trailGradient);
       const trailLength = calculateTrailLength(ac.gs);
 
       return {
@@ -56,9 +54,8 @@ export function useEnhancedAircraft(): EnhancedAircraft[] {
         isEmergency,
         displayName,
         iconSize,
-        trailColor,
         trailLength,
       };
     });
-  }, [aircraft, userLat, userLon, trailGradient, useProportionalSize, fixedAircraftSize]);
+  }, [aircraft, userLat, userLon, useProportionalSize, fixedAircraftSize]);
 }

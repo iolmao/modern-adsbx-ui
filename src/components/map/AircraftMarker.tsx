@@ -4,6 +4,11 @@ import type { EnhancedAircraft } from '@/types/aircraft';
 import { useConfigStore } from '@/store/configStore';
 import { EMERGENCY_COLOR } from '@/lib/colors/emergency';
 import { getAircraftIcon } from '@/lib/icons/aircraftIcon';
+import { AirplaneIcon } from '@/components/icons/AirplaneIcon';
+import { HeliIcon } from '@/components/icons/HeliIcon';
+import { FjetIcon } from '@/components/icons/FjetIcon';
+import { PlaneIcon } from '@/components/icons/PlaneIcon';
+import { DroneIcon } from '@/components/icons/DroneIcon';
 
 interface AircraftMarkerProps {
   aircraft: EnhancedAircraft;
@@ -34,6 +39,8 @@ export const AircraftMarker = memo(({ aircraft, onClick }: AircraftMarkerProps) 
         style={{
           width: aircraft.iconSize,
           height: aircraft.iconSize,
+          zIndex: 10,
+          filter: 'drop-shadow(0px 4px 0px rgba(0, 0, 0, 0.4))',
         }}
       >
         {aircraft.isEmergency && (
@@ -45,44 +52,39 @@ export const AircraftMarker = memo(({ aircraft, onClick }: AircraftMarkerProps) 
             }}
           />
         )}
-        {/* Bordo scuro (layer sotto) */}
-        <div
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            transform: `rotate(${rotation}deg) scale(1.4)`,
-            maskImage: `url(${iconPath})`,
-            WebkitMaskImage: `url(${iconPath})`,
-            maskSize: 'contain',
-            WebkitMaskSize: 'contain',
-            maskRepeat: 'no-repeat',
-            WebkitMaskRepeat: 'no-repeat',
-            maskPosition: 'center',
-            WebkitMaskPosition: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
-            filter: 'blur(1px)',
-          }}
-        />
-        {/* Icona principale con ombra */}
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            transform: `rotate(${rotation}deg)`,
-            maskImage: `url(${iconPath})`,
-            WebkitMaskImage: `url(${iconPath})`,
-            maskSize: 'contain',
-            WebkitMaskSize: 'contain',
-            maskRepeat: 'no-repeat',
-            WebkitMaskRepeat: 'no-repeat',
-            maskPosition: 'center',
-            WebkitMaskPosition: 'center',
-            backgroundColor: color,
-            filter: 'drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.9))',
-          }}
-        />
+
+        {/* SVG inline components per tutti i tipi */}
+        {iconPath === '/airplane.svg' ? (
+          <AirplaneIcon
+            color={color}
+            rotation={rotation}
+            size={aircraft.iconSize}
+          />
+        ) : iconPath === '/heli.svg' ? (
+          <HeliIcon
+            color={color}
+            rotation={rotation}
+            size={aircraft.iconSize}
+          />
+        ) : iconPath === '/fjet.svg' ? (
+          <FjetIcon
+            color={color}
+            rotation={rotation}
+            size={aircraft.iconSize}
+          />
+        ) : iconPath === '/plane.svg' ? (
+          <PlaneIcon
+            color={color}
+            rotation={rotation}
+            size={aircraft.iconSize}
+          />
+        ) : iconPath === '/drone.svg' ? (
+          <DroneIcon
+            color={color}
+            rotation={rotation}
+            size={aircraft.iconSize}
+          />
+        ) : null}
       </div>
     </Marker>
   );
