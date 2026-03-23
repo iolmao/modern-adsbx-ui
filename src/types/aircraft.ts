@@ -58,6 +58,7 @@ export interface Aircraft {
   nav_altitude_src?: string;      // Source of nav altitude
   t?: string;                     // Aircraft type (ICAO type code)
   r?: string;                     // Registration
+  desc?: string;                  // Aircraft model description (e.g. "BOEING 737-800")
   dbFlags?: number;               // Database flags
   year?: string;                  // Year of manufacture
 }
