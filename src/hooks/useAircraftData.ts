@@ -3,6 +3,24 @@ import { useAircraftStore } from '@/store/aircraftStore';
 import { useConfigStore } from '@/store/configStore';
 import { parseAircraftData } from '@/lib/parser/wqi';
 
+async function fetchWithProxyFallback(url: string): Promise<ArrayBuffer> {
+  // Try direct fetch first
+  try {
+    const response = await fetch(url);
+    if (response.ok) return response.arrayBuffer();
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  } catch (directError) {
+    // TypeError = likely CORS or network issue — try proxy silently
+    if (directError instanceof TypeError) {
+      const proxyUrl = `/proxy?url=${encodeURIComponent(url)}`;
+      const response = await fetch(proxyUrl);
+      if (response.ok) return response.arrayBuffer();
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    throw directError;
+  }
+}
+
 export function useAircraftData() {
   const { tar1090Url, refreshInterval, userLat, userLon } = useConfigStore();
   const { setAircraft, setLoading, setError } = useAircraftStore();
@@ -19,20 +37,11 @@ export function useAircraftData() {
 
     try {
       setLoading(true);
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        fatalErrorRef.current = true;
-        setError(`Feed error ${response.status}: ${response.statusText} — check the URL in Settings`);
-        return;
-      }
-
-      const buffer = await response.arrayBuffer();
+      const buffer = await fetchWithProxyFallback(url);
       const data = parseAircraftData(buffer, {
         siteLat: userLat ?? undefined,
         siteLon: userLon ?? undefined,
       });
-
       setAircraft(data.aircraft, data.now);
       setLoading(false);
     } catch (error) {
@@ -49,7 +58,6 @@ export function useAircraftData() {
 
   useEffect(() => {
     if (!tar1090Url) return;
-
     fetchData();
     const intervalId = setInterval(fetchData, refreshInterval);
     return () => clearInterval(intervalId);

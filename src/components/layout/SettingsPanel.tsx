@@ -8,6 +8,7 @@ import { TILE_LAYERS } from '@/constants/map';
 import { useRef } from 'react';
 import PRESETS from '@/config/presets.json';
 import type { TileLayerType } from '@/types/config';
+import { getFeedType, FEED_TYPE_LABEL } from '@/lib/feedType';
 
 export function SettingsPanel() {
   const { settingsPanelOpen, setSettingsPanelOpen, discoveredUrl } = useUIStore();
@@ -70,17 +71,15 @@ export function SettingsPanel() {
                 className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
                 placeholder="http://raspberrypi.local"
               />
-              {feedError && (
+              {feedError ? (
                 <div className="mt-2 text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2">
                   {feedError}
                 </div>
-              )}
-              {!feedError && discoveredUrl && config.tar1090Url === discoveredUrl && (
+              ) : config.tar1090Url ? (
                 <div className="mt-2 text-xs text-muted-foreground">
-                  Auto-discovered on local network
+                  {FEED_TYPE_LABEL[getFeedType(config.tar1090Url, discoveredUrl)]}
                 </div>
-              )}
-              {!feedError && !config.tar1090Url && (
+              ) : (
                 <div className="mt-2 text-xs text-muted-foreground">
                   Enter the base URL of your tar1090 or adsbx instance
                 </div>
