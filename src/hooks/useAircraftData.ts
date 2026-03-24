@@ -23,7 +23,7 @@ async function fetchWithProxyFallback(url: string): Promise<ArrayBuffer> {
 
 export function useAircraftData() {
   const { tar1090Url, refreshInterval, userLat, userLon } = useConfigStore();
-  const { setAircraft, setLoading, setError } = useAircraftStore();
+  const { setAircraft, setLoading, setError, clear } = useAircraftStore();
   const fatalErrorRef = useRef(false);
 
   const fetchData = useCallback(async () => {
@@ -51,10 +51,11 @@ export function useAircraftData() {
     }
   }, [tar1090Url, userLat, userLon, setAircraft, setLoading, setError]);
 
-  // Reset fatal error when URL changes
+  // Reset state when URL changes — drop old aircraft immediately to free memory
   useEffect(() => {
     fatalErrorRef.current = false;
-  }, [tar1090Url]);
+    clear();
+  }, [tar1090Url, clear]);
 
   useEffect(() => {
     if (!tar1090Url) return;

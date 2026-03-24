@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useAircraftStore } from '@/store/aircraftStore';
 import { useUIStore, type MapBounds } from '@/store/uiStore';
+import { useConfigStore } from '@/store/configStore';
 import type { AircraftHistoryMap, PositionHistory } from '@/types/aircraft';
 import { POSITION_HISTORY_SIZE, STALE_TIMEOUT } from '@/constants/aircraft';
 
@@ -19,8 +20,15 @@ function inHistoryBounds(lat: number, lon: number, bounds: MapBounds): boolean {
 export function useAircraftHistory() {
   const { aircraft, timestamp } = useAircraftStore();
   const { mapBounds } = useUIStore();
+  const { tar1090Url } = useConfigStore();
   const historyRef = useRef<AircraftHistoryMap>({});
   const lastSeenRef = useRef<Record<string, number>>({});
+
+  // Clear all history immediately when the feed URL changes
+  useEffect(() => {
+    historyRef.current = {};
+    lastSeenRef.current = {};
+  }, [tar1090Url]);
 
   useEffect(() => {
     const history = historyRef.current;
