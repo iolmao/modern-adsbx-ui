@@ -86,6 +86,7 @@ export function Map() {
           ],
         }}
         style={{ width: '100%', height: '100%' }}
+        maxTileCacheSize={50}
       >
         <NavigationControl position="bottom-left" />
 
