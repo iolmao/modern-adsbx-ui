@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude & local docs
+.claude/
+TODO.md
+README_PROJECT.md

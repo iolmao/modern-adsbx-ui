@@ -1,13 +1,17 @@
 import { X, Download, Upload } from 'lucide-react';
 import { useConfigStore } from '@/store/configStore';
 import { useUIStore } from '@/store/uiStore';
+import { useAircraftStore } from '@/store/aircraftStore';
 import { Button } from '@/components/ui/button';
 import { exportConfig, importConfig } from '@/lib/storage/config';
 import { TILE_LAYERS } from '@/constants/map';
 import { useRef } from 'react';
+import PRESETS from '@/config/presets.json';
+import type { TileLayerType } from '@/types/config';
 
 export function SettingsPanel() {
-  const { settingsPanelOpen, setSettingsPanelOpen } = useUIStore();
+  const { settingsPanelOpen, setSettingsPanelOpen, discoveredUrl } = useUIStore();
+  const { error: feedError } = useAircraftStore();
   const config = useConfigStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -58,14 +62,29 @@ export function SettingsPanel() {
 
           <div className="space-y-6">
             <div>
-              <label className="text-sm font-medium mb-2 block text-foreground">tar1090 URL</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">Feed URL</label>
               <input
                 type="text"
                 value={config.tar1090Url}
                 onChange={(e) => config.updateConfig({ tar1090Url: e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
-                placeholder="http://localhost"
+                placeholder="http://raspberrypi.local"
               />
+              {feedError && (
+                <div className="mt-2 text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2">
+                  {feedError}
+                </div>
+              )}
+              {!feedError && discoveredUrl && config.tar1090Url === discoveredUrl && (
+                <div className="mt-2 text-xs text-muted-foreground">
+                  Auto-discovered on local network
+                </div>
+              )}
+              {!feedError && !config.tar1090Url && (
+                <div className="mt-2 text-xs text-muted-foreground">
+                  Enter the base URL of your tar1090 or adsbx instance
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -90,6 +109,50 @@ export function SettingsPanel() {
                   placeholder="0.0"
                   step="0.000001"
                 />
+              </div>
+            </div>
+
+            {/* Themes */}
+            <div>
+              <label className="text-sm font-medium mb-3 block text-foreground">Themes</label>
+              <div className="grid grid-cols-3 gap-2">
+                {PRESETS.map((preset) => {
+                  const isActive =
+                    config.tileLayer === preset.tileLayer &&
+                    config.aircraftIconColor.toLowerCase() === preset.aircraftIconColor.toLowerCase() &&
+                    config.trailColor.toLowerCase() === preset.trailColor.toLowerCase();
+                  return (
+                    <button
+                      key={preset.id}
+                      onClick={() =>
+                        config.updateConfig({
+                          tileLayer: preset.tileLayer as TileLayerType,
+                          aircraftIconColor: preset.aircraftIconColor,
+                          trailColor: preset.trailColor,
+                        })
+                      }
+                      className={`rounded-lg overflow-hidden border transition-all focus:outline-none focus:ring-2 focus:ring-ring ${
+                        isActive
+                          ? 'border-foreground ring-1 ring-foreground'
+                          : 'border-border hover:border-foreground/50'
+                      }`}
+                    >
+                      <div className="aspect-video bg-muted">
+                        <img
+                          src={preset.thumbnail}
+                          alt={preset.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                      <div className="px-2 py-1.5 text-xs text-center font-medium text-muted-foreground">
+                        {preset.name}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

@@ -8,12 +8,14 @@ interface UIStore {
   detailLevel: 1 | 2;
   settingsPanelOpen: boolean;
   aircraftListOpen: boolean;
+  discoveredUrl: string | null;
   setViewMode: (mode: ViewMode) => void;
   selectAircraft: (hex: string | null) => void;
   setDetailLevel: (level: 1 | 2) => void;
   toggleSettingsPanel: () => void;
   setSettingsPanelOpen: (open: boolean) => void;
   setAircraftListOpen: (open: boolean) => void;
+  setDiscoveredUrl: (url: string | null) => void;
 }
 
 export const useUIStore = create<UIStore>((set) => ({
@@ -22,10 +24,12 @@ export const useUIStore = create<UIStore>((set) => ({
   detailLevel: 1,
   settingsPanelOpen: false,
   aircraftListOpen: false,
+  discoveredUrl: null,
   setViewMode: (mode) => set({ viewMode: mode }),
   selectAircraft: (hex) => set({ selectedAircraftHex: hex, detailLevel: 1 }),
   setDetailLevel: (level) => set({ detailLevel: level }),
   toggleSettingsPanel: () => set((state) => ({ settingsPanelOpen: !state.settingsPanelOpen })),
   setSettingsPanelOpen: (open) => set({ settingsPanelOpen: open }),
   setAircraftListOpen: (open) => set({ aircraftListOpen: open }),
+  setDiscoveredUrl: (url) => set({ discoveredUrl: url }),
 }));

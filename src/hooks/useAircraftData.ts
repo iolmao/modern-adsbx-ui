@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useAircraftStore } from '@/store/aircraftStore';
 import { useConfigStore } from '@/store/configStore';
 import { parseAircraftData } from '@/lib/parser/wqi';
@@ -6,28 +6,25 @@ import { parseAircraftData } from '@/lib/parser/wqi';
 export function useAircraftData() {
   const { tar1090Url, refreshInterval, userLat, userLon } = useConfigStore();
   const { setAircraft, setLoading, setError } = useAircraftStore();
+  const fatalErrorRef = useRef(false);
 
   const fetchData = useCallback(async () => {
-    if (!tar1090Url) {
-      setError('No tar1090 URL configured');
-      return;
+    if (!tar1090Url || fatalErrorRef.current) return;
+
+    let url = tar1090Url;
+    if (!url.includes('aircraft.json')) {
+      url = url.replace(/\/$/, '');
+      url = `${url}/tar1090/data/aircraft.json`;
     }
 
     try {
       setLoading(true);
-      // Se l'URL contiene già aircraft.json, usalo direttamente
-      // Altrimenti aggiungi il path standard tar1090
-      let url = tar1090Url;
-      if (!url.includes('aircraft.json')) {
-        // Rimuovi trailing slash se presente
-        url = url.replace(/\/$/, '');
-        url = `${url}/tar1090/data/aircraft.json`;
-      }
-
       const response = await fetch(url);
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        fatalErrorRef.current = true;
+        setError(`Feed error ${response.status}: ${response.statusText} — check the URL in Settings`);
+        return;
       }
 
       const buffer = await response.arrayBuffer();
@@ -39,21 +36,22 @@ export function useAircraftData() {
       setAircraft(data.aircraft, data.now);
       setLoading(false);
     } catch (error) {
+      fatalErrorRef.current = true;
       const message = error instanceof Error ? error.message : 'Unknown error';
-      setError(`Failed to fetch aircraft data: ${message}`);
-      console.error('Aircraft data fetch error:', error);
+      setError(`Cannot reach feed: ${message} — check the URL in Settings`);
     }
   }, [tar1090Url, userLat, userLon, setAircraft, setLoading, setError]);
+
+  // Reset fatal error when URL changes
+  useEffect(() => {
+    fatalErrorRef.current = false;
+  }, [tar1090Url]);
 
   useEffect(() => {
     if (!tar1090Url) return;
 
-    // Initial fetch
     fetchData();
-
-    // Set up polling
     const intervalId = setInterval(fetchData, refreshInterval);
-
     return () => clearInterval(intervalId);
   }, [tar1090Url, refreshInterval, fetchData]);
 }
