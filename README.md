@@ -1,4 +1,4 @@
-# modern-adsbx-ui
+# ADSBX but with modern UI
 
 A fast, modern web UI for ADS-B flight tracking. Designed to run alongside [tar1090](https://github.com/wiedehopf/tar1090) or any adsbx-compatible feed on your own hardware.
 
@@ -50,6 +50,12 @@ Built with React 19, TypeScript, MapLibre GL, and Tailwind CSS.
 
 - Node.js 18 or later
 - A running tar1090 or adsbx instance on the same network (or any public feed URL)
+
+```bash
+# Check node version
+node -v
+```
+If version is <18, you should update by following [this guide](https://gist.github.com/stonehippo/f4ef8446226101e8bed3e07a58ea512a)
 
 ### Raspberry Pi / Linux
 
