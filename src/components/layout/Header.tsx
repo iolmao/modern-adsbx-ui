@@ -7,7 +7,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 export function Header() {
   const { aircraft } = useAircraftStore();
-  const { setSettingsPanelOpen, setAircraftListOpen } = useUIStore();
+  const { setSettingsPanelOpen, setAircraftListOpen, visibleCount } = useUIStore();
 
   return (
     <div className="absolute top-0 left-0 right-0 z-10 bg-background/80 backdrop-blur-md border-b border-border/50 px-4 py-3 flex items-center justify-between text-foreground">
@@ -17,7 +17,7 @@ export function Header() {
           onClick={() => setAircraftListOpen(true)}
           className="text-sm text-muted-foreground font-mono underline decoration-dotted hover:text-foreground transition-colors cursor-pointer"
         >
-          {aircraft.length} aircraft
+          {visibleCount} / {aircraft.length} aircraft
         </button>
       </div>
 

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import MapGL, { NavigationControl, type ViewState, type MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useConfigStore } from '@/store/configStore';
@@ -13,29 +13,16 @@ import { AircraftLabel } from './AircraftLabel';
 import { AircraftTrailsCanvas } from './AircraftTrailsCanvas';
 import { AircraftDetailPanel } from '@/components/aircraft/AircraftDetailPanel';
 
-interface Bounds { north: number; south: number; east: number; west: number }
-
-// Small padding so aircraft don't pop in/out exactly at the viewport edge
-const BOUNDS_PADDING = 0.5 // degrees
-
-function inBounds(lat: number, lon: number, bounds: Bounds): boolean {
-  return (
-    lat >= bounds.south - BOUNDS_PADDING &&
-    lat <= bounds.north + BOUNDS_PADDING &&
-    lon >= bounds.west - BOUNDS_PADDING &&
-    lon <= bounds.east + BOUNDS_PADDING
-  );
-}
-
 export function Map() {
   const { tileLayer, showLabels, showTrails, userLat, userLon, refreshInterval } = useConfigStore();
-  const { viewMode, selectAircraft } = useUIStore();
+  const { viewMode, selectAircraft, setVisibleCount, setMapBounds } = useUIStore();
+
+  // aircraft is already filtered to viewport by useEnhancedAircraft (via mapBounds in store)
   const rawAircraft = useEnhancedAircraft();
   const aircraft = useInterpolatedPositions(rawAircraft, refreshInterval);
   const history = useAircraftHistory();
 
   const mapRef = useRef<MapRef>(null);
-  const [bounds, setBounds] = useState<Bounds | null>(null);
 
   const [viewState, setViewState] = useState<ViewState>({
     ...DEFAULT_MAP_VIEW,
@@ -48,13 +35,17 @@ export function Map() {
 
   const selectedLayer = TILE_LAYERS.find((l) => l.id === tileLayer) ?? TILE_LAYERS[0];
 
-  const handleMove = useCallback((evt: { viewState: ViewState }) => {
-    setViewState(evt.viewState);
+  const updateBounds = useCallback(() => {
     if (mapRef.current) {
       const b = mapRef.current.getBounds();
-      if (b) setBounds({ north: b.getNorth(), south: b.getSouth(), east: b.getEast(), west: b.getWest() });
+      if (b) setMapBounds({ north: b.getNorth(), south: b.getSouth(), east: b.getEast(), west: b.getWest() });
     }
-  }, []);
+  }, [setMapBounds]);
+
+  const handleMove = useCallback((evt: { viewState: ViewState }) => {
+    setViewState(evt.viewState);
+    updateBounds();
+  }, [updateBounds]);
 
   const handleAircraftClick = useCallback(
     (hex: string) => {
@@ -63,9 +54,9 @@ export function Map() {
     [viewMode, selectAircraft]
   );
 
-  const visibleAircraft = bounds
-    ? aircraft.filter((ac) => ac.lat !== undefined && ac.lon !== undefined && inBounds(ac.lat!, ac.lon!, bounds))
-    : aircraft.filter((ac) => ac.lat !== undefined && ac.lon !== undefined);
+  useEffect(() => {
+    setVisibleCount(aircraft.length);
+  }, [aircraft.length, setVisibleCount]);
 
   return (
     <div className="w-screen h-screen">
@@ -73,12 +64,7 @@ export function Map() {
         ref={mapRef}
         {...viewState}
         onMove={handleMove}
-        onLoad={() => {
-          if (mapRef.current) {
-            const b = mapRef.current.getBounds();
-            if (b) setBounds({ north: b.getNorth(), south: b.getSouth(), east: b.getEast(), west: b.getWest() });
-          }
-        }}
+        onLoad={updateBounds}
         mapStyle={{
           version: 8,
           sources: {
@@ -103,9 +89,9 @@ export function Map() {
       >
         <NavigationControl position="bottom-left" />
 
-        <AircraftTrailsCanvas aircraft={visibleAircraft} history={history} />
+        <AircraftTrailsCanvas aircraft={aircraft} history={history} />
 
-        {visibleAircraft.map((ac) => (
+        {aircraft.map((ac) => (
           <div key={ac.hex}>
             {viewMode === 'standard' ? (
               <>
