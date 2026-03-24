@@ -29,11 +29,13 @@ export function useAircraftPhoto(hex: string | null) {
 
     let cancelled = false;
 
+    const hexUpper = hex.toUpperCase();
+
     async function fetchPhoto() {
       setLoading(true);
       try {
         const response = await fetch(
-          `https://api.planespotters.net/pub/photos/hex/${hex.toUpperCase()}`
+          `https://api.planespotters.net/pub/photos/hex/${hexUpper}`
         );
 
         if (!response.ok) {

@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Source, Layer } from 'react-map-gl/maplibre';
 import type { EnhancedAircraft, PositionHistory } from '@/types/aircraft';
 import { EMERGENCY_COLOR } from '@/lib/colors/emergency';
+import { useConfigStore } from '@/store/configStore';
 
 interface AircraftTrailProps {
   aircraft: EnhancedAircraft;
@@ -9,6 +10,7 @@ interface AircraftTrailProps {
 }
 
 export const AircraftTrail = memo(({ aircraft, trail }: AircraftTrailProps) => {
+  const { trailColor } = useConfigStore();
   const limitedTrail = trail.slice(-aircraft.trailLength);
 
   if (limitedTrail.length < 2) return null;
@@ -24,7 +26,7 @@ export const AircraftTrail = memo(({ aircraft, trail }: AircraftTrailProps) => {
     properties: {},
   };
 
-  const color = aircraft.isEmergency ? EMERGENCY_COLOR : aircraft.trailColor;
+  const color = aircraft.isEmergency ? EMERGENCY_COLOR : trailColor;
 
   return (
     <Source id={`trail-${aircraft.hex}`} type="geojson" data={geojson}>

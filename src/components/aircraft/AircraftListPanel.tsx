@@ -10,7 +10,6 @@ import {
   formatVertRateBrief,
   formatTime,
 } from '@/lib/formatters';
-import type { EnhancedAircraft } from '@/types/aircraft';
 
 export function AircraftListPanel() {
   const aircraft = useEnhancedAircraft();

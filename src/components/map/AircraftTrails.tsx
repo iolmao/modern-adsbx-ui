@@ -2,13 +2,14 @@ import { memo, useMemo, useRef } from 'react';
 import { Source, Layer } from 'react-map-gl/maplibre';
 import type { EnhancedAircraft, PositionHistory, AircraftHistoryMap } from '@/types/aircraft';
 import { EMERGENCY_COLOR } from '@/lib/colors/emergency';
+import { useConfigStore } from '@/store/configStore';
 
 interface AircraftTrailsProps {
   aircraft: EnhancedAircraft[];
   history: AircraftHistoryMap;
 }
 
-function createTrailsGeoJSON(aircraft: EnhancedAircraft[], history: AircraftHistoryMap) {
+function createTrailsGeoJSON(aircraft: EnhancedAircraft[], history: AircraftHistoryMap, trailColor: string) {
   const features = aircraft
     .map((ac) => {
       const trail = history[ac.hex];
@@ -18,7 +19,7 @@ function createTrailsGeoJSON(aircraft: EnhancedAircraft[], history: AircraftHist
       if (limitedTrail.length < 2) return null;
 
       const coordinates = limitedTrail.map((pos: PositionHistory) => [pos.lon, pos.lat]);
-      const color = ac.isEmergency ? EMERGENCY_COLOR : ac.trailColor;
+      const color = ac.isEmergency ? EMERGENCY_COLOR : trailColor;
 
       return {
         type: 'Feature' as const,
@@ -63,10 +64,11 @@ const TrailsLayer = memo(() => {
 TrailsLayer.displayName = 'TrailsLayer';
 
 export const AircraftTrails = memo(({ aircraft, history }: AircraftTrailsProps) => {
+  const { trailColor } = useConfigStore();
   const geojsonRef = useRef<any>(null);
 
   const geojson = useMemo(() => {
-    const newGeojson = createTrailsGeoJSON(aircraft, history);
+    const newGeojson = createTrailsGeoJSON(aircraft, history, trailColor);
 
     // Salva il riferimento per debug
     geojsonRef.current = newGeojson;

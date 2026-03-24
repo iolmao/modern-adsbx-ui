@@ -14,96 +14,94 @@ export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvas
   const { current: mapInstance } = useMap();
   const { showTrails, trailColor } = useConfigStore();
   const { selectedAircraftHex, viewMode } = useUIStore();
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const needsRedrawRef = useRef(true);
 
-  // Mark for redraw when data changes
-  useEffect(() => {
-    needsRedrawRef.current = true;
-  }, [aircraft, history, showTrails, selectedAircraftHex, trailColor, viewMode]);
+  // Refs so the draw loop always reads latest data without restarting
+  const aircraftRef = useRef(aircraft);
+  const historyRef = useRef(history);
+  const showTrailsRef = useRef(showTrails);
+  const selectedHexRef = useRef(selectedAircraftHex);
+  const trailColorRef = useRef(trailColor);
+  const viewModeRef = useRef(viewMode);
 
+  // Update refs and mark dirty — no canvas/loop restart needed
+  useEffect(() => {
+    aircraftRef.current = aircraft;
+    historyRef.current = history;
+    needsRedrawRef.current = true;
+  }, [aircraft, history]);
+
+  useEffect(() => {
+    showTrailsRef.current = showTrails;
+    selectedHexRef.current = selectedAircraftHex;
+    trailColorRef.current = trailColor;
+    viewModeRef.current = viewMode;
+    needsRedrawRef.current = true;
+  }, [showTrails, selectedAircraftHex, trailColor, viewMode]);
+
+  // Canvas + rAF loop — created once when the map mounts, torn down on unmount
   useEffect(() => {
     if (!mapInstance) return;
     const map = mapInstance.getMap();
     if (!map) return;
 
-    // Create canvas if it doesn't exist
-    if (!canvasRef.current) {
-      const canvas = document.createElement('canvas');
-      canvas.style.position = 'absolute';
-      canvas.style.top = '0';
-      canvas.style.left = '0';
-      canvas.style.pointerEvents = 'none';
-      canvas.style.zIndex = '0';
-      canvasRef.current = canvas;
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '0';
+    map.getContainer().appendChild(canvas);
 
-      const mapContainer = map.getContainer();
-      mapContainer.appendChild(canvas);
-    }
-
-    const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Function to draw trails
     const drawTrails = () => {
       const mapCanvas = map.getCanvas();
       const width = mapCanvas.clientWidth;
       const height = mapCanvas.clientHeight;
       const dpr = window.devicePixelRatio || 1;
 
-      // Update canvas size with device pixel ratio
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
-
-      // Scale context for device pixel ratio
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      // Clear canvas
       ctx.clearRect(0, 0, width, height);
 
-      // Draw trails based on settings
-      aircraft.forEach((ac) => {
-        // Show trail if:
-        // - viewMode is realistic (always show all trails), OR
-        // - showTrails is enabled (show all), OR
-        // - this aircraft is selected (show only selected)
-        const shouldShowTrail = viewMode === 'realistic' || showTrails || ac.hex === selectedAircraftHex;
-        if (!shouldShowTrail) return;
+      const ac = aircraftRef.current;
+      const hist = historyRef.current;
+      const color = trailColorRef.current;
+      const selHex = selectedHexRef.current;
+      const trails = showTrailsRef.current;
+      const mode = viewModeRef.current;
 
-        const trail = history[ac.hex];
+      ac.forEach((a) => {
+        const shouldShow = mode === 'realistic' || trails || a.hex === selHex;
+        if (!shouldShow) return;
+
+        const trail = hist[a.hex];
         if (!trail || trail.length < 2) return;
 
-        const color = ac.isEmergency ? EMERGENCY_COLOR : trailColor;
-
-        // Start drawing
         ctx.beginPath();
-        ctx.strokeStyle = color;
+        ctx.strokeStyle = a.isEmergency ? EMERGENCY_COLOR : color;
         ctx.lineWidth = 2;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.globalAlpha = 0.8;
 
-        let firstPoint = true;
+        let first = true;
         trail.forEach((pos: PositionHistory) => {
-          const point = map.project([pos.lon, pos.lat]);
-          if (firstPoint) {
-            ctx.moveTo(point.x, point.y);
-            firstPoint = false;
-          } else {
-            ctx.lineTo(point.x, point.y);
-          }
+          const pt = map.project([pos.lon, pos.lat]);
+          if (first) { ctx.moveTo(pt.x, pt.y); first = false; }
+          else ctx.lineTo(pt.x, pt.y);
         });
 
         ctx.stroke();
       });
     };
 
-    // Animation loop
     const animate = () => {
       if (needsRedrawRef.current) {
         drawTrails();
@@ -112,31 +110,18 @@ export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvas
       animationFrameRef.current = requestAnimationFrame(animate);
     };
 
-    // Mark for redraw on map move/zoom
-    const handleMapChange = () => {
-      needsRedrawRef.current = true;
-    };
-
-    map.on('move', handleMapChange);
-    map.on('zoom', handleMapChange);
-
-    // Start animation loop
+    const markDirty = () => { needsRedrawRef.current = true; };
+    map.on('move', markDirty);
+    map.on('zoom', markDirty);
     animate();
 
     return () => {
-      map.off('move', handleMapChange);
-      map.off('zoom', handleMapChange);
-
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-
-      if (canvasRef.current && canvasRef.current.parentNode) {
-        canvasRef.current.parentNode.removeChild(canvasRef.current);
-        canvasRef.current = null;
-      }
+      map.off('move', markDirty);
+      map.off('zoom', markDirty);
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
     };
-  }, [mapInstance, aircraft, history, showTrails, selectedAircraftHex, trailColor]);
+  }, [mapInstance]); // ← solo mapInstance: canvas e loop vivono con la mappa
 
   return null;
 }

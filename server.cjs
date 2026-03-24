@@ -25,12 +25,27 @@ http.createServer(async (req, res) => {
   if (url.pathname === '/proxy') {
     const target = url.searchParams.get('url');
     if (!target) { res.writeHead(400); res.end('Missing url'); return; }
-    try {
-      const lib = target.startsWith('https') ? https : http;
-      lib.get(target, (upstream) => {
-        res.writeHead(upstream.statusCode, { 'Content-Type': 'application/octet-stream' });
+
+    function proxyFetch(targetUrl, redirectsLeft) {
+      const lib = targetUrl.startsWith('https') ? https : http;
+      lib.get(targetUrl, (upstream) => {
+        const status = upstream.statusCode;
+        // Follow redirects
+        if ((status === 301 || status === 302 || status === 307 || status === 308) && upstream.headers.location && redirectsLeft > 0) {
+          upstream.resume(); // drain
+          const next = new URL(upstream.headers.location, targetUrl).toString();
+          return proxyFetch(next, redirectsLeft - 1);
+        }
+        // Forward Content-Encoding so the browser decompresses gzip/br correctly
+        const headers = { 'Content-Type': 'application/octet-stream' };
+        if (upstream.headers['content-encoding']) headers['Content-Encoding'] = upstream.headers['content-encoding'];
+        res.writeHead(status, headers);
         upstream.pipe(res);
       }).on('error', (e) => { res.writeHead(502); res.end(String(e)); });
+    }
+
+    try {
+      proxyFetch(target, 5);
     } catch (e) { res.writeHead(502); res.end(String(e)); }
     return;
   }

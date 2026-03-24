@@ -14,7 +14,7 @@ import { AircraftTrailsCanvas } from './AircraftTrailsCanvas';
 import { AircraftDetailPanel } from '@/components/aircraft/AircraftDetailPanel';
 
 export function Map() {
-  const { tileLayer, showLabels, showTrails, userLat, userLon, refreshInterval } = useConfigStore();
+  const { tileLayer, showLabels, userLat, userLon, refreshInterval } = useConfigStore();
   const { viewMode, selectAircraft, setVisibleCount, setMapBounds } = useUIStore();
 
   // aircraft is already filtered to viewport by useEnhancedAircraft (via mapBounds in store)

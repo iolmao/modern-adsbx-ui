@@ -163,7 +163,7 @@ export function AircraftDetailPanel() {
   );
 }
 
-function CompactStats({ aircraft, displayUnits }: { aircraft: EnhancedAircraft; displayUnits: string }) {
+function CompactStats({ aircraft, displayUnits }: { aircraft: EnhancedAircraft; displayUnits: import('@/types/config').DisplayUnits }) {
   return (
     <div className="grid grid-cols-2 gap-2 text-sm">
       <div>
