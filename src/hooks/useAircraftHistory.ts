@@ -1,28 +1,45 @@
 import { useEffect, useRef } from 'react';
 import { useAircraftStore } from '@/store/aircraftStore';
+import { useUIStore, type MapBounds } from '@/store/uiStore';
 import type { AircraftHistoryMap, PositionHistory } from '@/types/aircraft';
 import { POSITION_HISTORY_SIZE, STALE_TIMEOUT } from '@/constants/aircraft';
 
+// Larger padding than render bounds — keep history for aircraft about to enter view
+const HISTORY_BOUNDS_PADDING = 2.0; // degrees
+
+function inHistoryBounds(lat: number, lon: number, bounds: MapBounds): boolean {
+  return (
+    lat >= bounds.south - HISTORY_BOUNDS_PADDING &&
+    lat <= bounds.north + HISTORY_BOUNDS_PADDING &&
+    lon >= bounds.west - HISTORY_BOUNDS_PADDING &&
+    lon <= bounds.east + HISTORY_BOUNDS_PADDING
+  );
+}
+
 export function useAircraftHistory() {
   const { aircraft, timestamp } = useAircraftStore();
+  const { mapBounds } = useUIStore();
   const historyRef = useRef<AircraftHistoryMap>({});
+  const lastSeenRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     const history = historyRef.current;
-    const currentTime = timestamp / 1000; // Convert to seconds
+    const lastSeen = lastSeenRef.current;
+    const currentTime = timestamp / 1000;
 
-    // Update history for each aircraft with position
     aircraft.forEach((ac) => {
       if (ac.lat === undefined || ac.lon === undefined) return;
 
-      if (!history[ac.hex]) {
-        history[ac.hex] = [];
-      }
+      // Only accumulate history for aircraft in or near the viewport
+      if (mapBounds && !inHistoryBounds(ac.lat, ac.lon, mapBounds)) return;
+
+      lastSeen[ac.hex] = currentTime;
+
+      if (!history[ac.hex]) history[ac.hex] = [];
 
       const aircraftHistory = history[ac.hex];
       const lastPos = aircraftHistory[aircraftHistory.length - 1];
 
-      // Only add if position changed
       const posChanged =
         !lastPos ||
         lastPos.lat !== ac.lat ||
@@ -39,18 +56,25 @@ export function useAircraftHistory() {
         };
 
         aircraftHistory.push(newPos);
-        // No limit - trail lives until aircraft disappears
+
+        // Cap history length — drop oldest entries
+        if (aircraftHistory.length > POSITION_HISTORY_SIZE) {
+          aircraftHistory.splice(0, aircraftHistory.length - POSITION_HISTORY_SIZE);
+        }
       }
     });
 
-    // Cleanup aircraft that are no longer active (immediate deletion)
+    // Prune aircraft no longer in feed or not seen for STALE_TIMEOUT seconds
     const activeHexes = new Set(aircraft.map((ac) => ac.hex));
     Object.keys(history).forEach((hex) => {
-      if (!activeHexes.has(hex)) {
+      const gone = !activeHexes.has(hex);
+      const stale = currentTime - (lastSeen[hex] ?? 0) > STALE_TIMEOUT;
+      if (gone || stale) {
         delete history[hex];
+        delete lastSeen[hex];
       }
     });
-  }, [aircraft, timestamp]);
+  }, [aircraft, timestamp, mapBounds]);
 
   return historyRef.current;
 }
