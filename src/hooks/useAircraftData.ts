@@ -4,13 +4,11 @@ import { useConfigStore } from '@/store/configStore';
 import { parseAircraftData } from '@/lib/parser/wqi';
 
 async function fetchWithProxyFallback(url: string): Promise<ArrayBuffer> {
-  // Try direct fetch first
   try {
     const response = await fetch(url);
     if (response.ok) return response.arrayBuffer();
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   } catch (directError) {
-    // TypeError = likely CORS or network issue — try proxy silently
     if (directError instanceof TypeError) {
       const proxyUrl = `/proxy?url=${encodeURIComponent(url)}`;
       const response = await fetch(proxyUrl);
@@ -25,6 +23,14 @@ export function useAircraftData() {
   const { tar1090Url, refreshInterval, userLat, userLon } = useConfigStore();
   const { setAircraft, setLoading, setError, clear } = useAircraftStore();
   const fatalErrorRef = useRef(false);
+  const activeUrlRef = useRef(tar1090Url);
+
+  // Reset state when URL changes — discard any in-flight response for the old URL
+  useEffect(() => {
+    activeUrlRef.current = tar1090Url;
+    fatalErrorRef.current = false;
+    clear();
+  }, [tar1090Url, clear]);
 
   const fetchData = useCallback(async () => {
     if (!tar1090Url || fatalErrorRef.current) return;
@@ -38,6 +44,8 @@ export function useAircraftData() {
     try {
       setLoading(true);
       const buffer = await fetchWithProxyFallback(url);
+      // URL may have changed while the fetch was in flight — discard stale result
+      if (activeUrlRef.current !== tar1090Url) return;
       const data = parseAircraftData(buffer, {
         siteLat: userLat ?? undefined,
         siteLon: userLon ?? undefined,
@@ -50,12 +58,6 @@ export function useAircraftData() {
       setError(`Cannot reach feed: ${message} — check the URL in Settings`);
     }
   }, [tar1090Url, userLat, userLon, setAircraft, setLoading, setError]);
-
-  // Reset state when URL changes — drop old aircraft immediately to free memory
-  useEffect(() => {
-    fatalErrorRef.current = false;
-    clear();
-  }, [tar1090Url, clear]);
 
   useEffect(() => {
     if (!tar1090Url) return;

@@ -5,6 +5,7 @@ import { useConfigStore } from '@/store/configStore';
 import { useSelectedAircraft } from '@/hooks/useSelectedAircraft';
 import { useAircraftPhoto } from '@/hooks/useAircraftPhoto';
 import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import {
   formatAltitudeBrief,
@@ -25,6 +26,17 @@ export function AircraftDetailPanel() {
   const { displayUnits } = useConfigStore();
   const aircraft = useSelectedAircraft();
   const { photo } = useAircraftPhoto(selectedAircraftHex);
+  const [photoVisible, setPhotoVisible] = useState(false);
+
+  useEffect(() => {
+    if (photo) {
+      // allow the opacity-0 state to paint first, then fade in
+      const t = setTimeout(() => setPhotoVisible(true), 10);
+      return () => clearTimeout(t);
+    } else {
+      setPhotoVisible(false);
+    }
+  }, [photo]);
 
   if (!selectedAircraftHex || !aircraft) return null;
   if (aircraft.lat === undefined || aircraft.lon === undefined) return null;
@@ -45,7 +57,7 @@ export function AircraftDetailPanel() {
         className="aircraft-detail-popup"
       >
         {photo ? (
-          <div className="w-72 overflow-hidden rounded-2xl shadow-xl border border-border/50">
+          <div className={`w-72 overflow-hidden rounded-2xl shadow-xl border border-border/50 transition-opacity duration-300 ${photoVisible ? 'opacity-100' : 'opacity-0'}`}>
             <div className="relative">
               <img
                 src={photo.thumbnail_large.src}

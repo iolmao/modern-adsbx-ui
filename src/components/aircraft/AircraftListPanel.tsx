@@ -30,8 +30,8 @@ export function AircraftListPanel() {
       />
 
       {/* Panel */}
-      <div className={`fixed top-20 left-4 z-50 bg-background/95 backdrop-blur-md border border-border/50 rounded-2xl p-4 max-w-5xl shadow-xl text-foreground transition-transform duration-300 ease-out ${
-        aircraftListOpen ? 'translate-y-0' : 'translate-y-[calc(-100%-5rem)]'
+      <div className={`fixed top-20 left-4 z-50 bg-background/95 backdrop-blur-md border border-border/50 rounded-2xl p-4 max-w-5xl shadow-xl text-foreground transition-all duration-300 ease-out ${
+        aircraftListOpen ? 'translate-y-0 opacity-100' : '-translate-y-[calc(100%+6rem)] opacity-0'
       }`}>
         {/* Header */}
         <div className="flex items-start justify-between mb-3">

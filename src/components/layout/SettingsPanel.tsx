@@ -5,25 +5,17 @@ import { useAircraftStore } from '@/store/aircraftStore';
 import { Button } from '@/components/ui/button';
 import { exportConfig, importConfig } from '@/lib/storage/config';
 import { TILE_LAYERS } from '@/constants/map';
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import PRESETS from '@/config/presets.json';
 import type { TileLayerType } from '@/types/config';
-import { getFeedType, FEED_TYPE_LABEL } from '@/lib/feedType';
 import { useFeedHistory } from '@/hooks/useFeedHistory';
 
 export function SettingsPanel() {
-  const { settingsPanelOpen, setSettingsPanelOpen, discoveredUrl } = useUIStore();
+  const { settingsPanelOpen, setSettingsPanelOpen } = useUIStore();
   const { error: feedError } = useAircraftStore();
   const config = useConfigStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { history: feedHistory, addUrl: addFeedUrl, removeUrl: removeFeedUrl } = useFeedHistory();
-
-  // Save URL to history when it's working (no error, non-empty)
-  useEffect(() => {
-    if (!feedError && config.tar1090Url) {
-      addFeedUrl(config.tar1090Url);
-    }
-  }, [feedError, config.tar1090Url, addFeedUrl]);
 
   const handleExport = () => {
     const { updateConfig, resetConfig, ...configToExport } = config;
@@ -72,7 +64,17 @@ export function SettingsPanel() {
 
           <div className="space-y-6">
             <div>
-              <label className="text-sm font-medium mb-2 block text-foreground">Feed URL</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-foreground">Feed URL</label>
+                {config.tar1090Url && (
+                  <button
+                    onClick={() => config.updateConfig({ tar1090Url: '' })}
+                    className="text-xs text-muted-foreground underline decoration-dotted hover:text-foreground transition-colors"
+                  >
+                    use local feed
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
                 value={config.tar1090Url}
@@ -84,30 +86,23 @@ export function SettingsPanel() {
                 <div className="mt-2 text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2">
                   {feedError}
                 </div>
-              ) : config.tar1090Url ? (
-                <div className="mt-2 text-xs text-muted-foreground">
-                  {FEED_TYPE_LABEL[getFeedType(config.tar1090Url, discoveredUrl)]}
-                </div>
               ) : (
-                <div className="mt-2 text-xs text-muted-foreground">
-                  Enter the base URL of your tar1090 or adsbx instance
+                <div className="mt-2">
+                  {config.tar1090Url && !feedHistory.includes(config.tar1090Url) && (
+                    <button
+                      onClick={() => addFeedUrl(config.tar1090Url)}
+                      className="text-xs text-muted-foreground underline decoration-dotted hover:text-foreground transition-colors"
+                    >
+                      Add to My Feeds
+                    </button>
+                  )}
                 </div>
               )}
 
-              {/* Local feed link */}
-              {config.tar1090Url && (
-                <button
-                  onClick={() => config.updateConfig({ tar1090Url: '' })}
-                  className="mt-2 text-xs text-muted-foreground underline decoration-dotted hover:text-foreground transition-colors cursor-pointer"
-                >
-                  use local feed
-                </button>
-              )}
-
-              {/* Recent servers */}
+              {/* My Feeds */}
               {feedHistory.length > 0 && (
                 <div className="mt-3 space-y-1">
-                  <div className="text-xs text-muted-foreground/60 mb-1">Recent</div>
+                  <div className="text-xs text-muted-foreground/60 mb-1">My Feeds</div>
                   {feedHistory.map((url) => {
                     const isCurrent = url === config.tar1090Url;
                     return (

@@ -22,10 +22,8 @@ export function useAircraftPhoto(hex: string | null) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!hex) {
-      setPhoto(null);
-      return;
-    }
+    setPhoto(null); // reset immediately so previous aircraft's photo never bleeds through
+    if (!hex) return;
 
     let cancelled = false;
 
