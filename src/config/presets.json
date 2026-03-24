@@ -1,0 +1,26 @@
+[
+  {
+    "id": "fr42",
+    "name": "FR42",
+    "tileLayer": "osm",
+    "aircraftIconColor": "#FFEA00",
+    "trailColor": "#000000",
+    "thumbnail": "/map-thumbnails/fr42.png"
+  },
+  {
+    "id": "real-view",
+    "name": "Real View",
+    "tileLayer": "esri-satellite",
+    "aircraftIconColor": "#FFFFFF",
+    "trailColor": "#FFFFFF",
+    "thumbnail": "/map-thumbnails/real-view.png"
+  },
+  {
+    "id": "vintage-radar",
+    "name": "Vintage Radar",
+    "tileLayer": "stamen-dark",
+    "aircraftIconColor": "#00FF00",
+    "trailColor": "#00FF00",
+    "thumbnail": "/map-thumbnails/vintage-radar.png"
+  }
+]

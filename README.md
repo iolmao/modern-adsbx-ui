@@ -1,73 +1,57 @@
-# React + TypeScript + Vite
+# ADSB Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A real-time ADS-B flight tracker built with React, TypeScript, and Leaflet. Connects to a local [tar1090](https://github.com/wiedehopf/tar1090) instance to display live aircraft positions on an interactive map.
 
-Currently, two official plugins are available:
+## Customizing Themes
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Themes are visual presets that set the map tile layer, aircraft icon color, and trail color in one click. They appear in the **Themes** section of the settings panel.
 
-## React Compiler
+### 1. Edit the theme definitions
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Open `src/config/presets.json` and add, remove, or modify entries:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
+```json
+[
   {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+    "id": "my-theme",
+    "name": "My Theme",
+    "tileLayer": "osm",
+    "aircraftIconColor": "#FFEA00",
+    "trailColor": "#000000",
+    "thumbnail": "/map-thumbnails/my-theme.png"
+  }
+]
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+| Field | Description |
+|---|---|
+| `id` | Unique identifier (no spaces) |
+| `name` | Label shown in the settings panel |
+| `tileLayer` | Map style — see options below |
+| `aircraftIconColor` | Hex color for aircraft icons |
+| `trailColor` | Hex color for flight trails |
+| `thumbnail` | Preview image path, relative to `public/` |
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+**Available `tileLayer` values:**
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Value | Map |
+|---|---|
+| `osm` | OpenStreetMap |
+| `esri-satellite` | ESRI World Imagery (satellite) |
+| `stamen-dark` | Stamen Toner Dark |
+
+### 2. Add the thumbnail image
+
+Place the preview image in `public/map-thumbnails/`. The filename must match the `thumbnail` field in `presets.json`.
+
+Recommended size: **384×216px** (16:9).
+
 ```
+public/
+└── map-thumbnails/
+    ├── fr42.png
+    ├── real-view.png
+    └── vintage-radar.png
+```
+
+If an image is missing, the theme card still appears — only the preview area will be blank.

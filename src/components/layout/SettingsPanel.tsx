@@ -5,16 +5,25 @@ import { useAircraftStore } from '@/store/aircraftStore';
 import { Button } from '@/components/ui/button';
 import { exportConfig, importConfig } from '@/lib/storage/config';
 import { TILE_LAYERS } from '@/constants/map';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import PRESETS from '@/config/presets.json';
 import type { TileLayerType } from '@/types/config';
 import { getFeedType, FEED_TYPE_LABEL } from '@/lib/feedType';
+import { useFeedHistory } from '@/hooks/useFeedHistory';
 
 export function SettingsPanel() {
   const { settingsPanelOpen, setSettingsPanelOpen, discoveredUrl } = useUIStore();
   const { error: feedError } = useAircraftStore();
   const config = useConfigStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { history: feedHistory, addUrl: addFeedUrl, removeUrl: removeFeedUrl } = useFeedHistory();
+
+  // Save URL to history when it's working (no error, non-empty)
+  useEffect(() => {
+    if (!feedError && config.tar1090Url) {
+      addFeedUrl(config.tar1090Url);
+    }
+  }, [feedError, config.tar1090Url, addFeedUrl]);
 
   const handleExport = () => {
     const { updateConfig, resetConfig, ...configToExport } = config;
@@ -82,6 +91,48 @@ export function SettingsPanel() {
               ) : (
                 <div className="mt-2 text-xs text-muted-foreground">
                   Enter the base URL of your tar1090 or adsbx instance
+                </div>
+              )}
+
+              {/* Local feed link */}
+              {config.tar1090Url && (
+                <button
+                  onClick={() => config.updateConfig({ tar1090Url: '' })}
+                  className="mt-2 text-xs text-muted-foreground underline decoration-dotted hover:text-foreground transition-colors cursor-pointer"
+                >
+                  use local feed
+                </button>
+              )}
+
+              {/* Recent servers */}
+              {feedHistory.length > 0 && (
+                <div className="mt-3 space-y-1">
+                  <div className="text-xs text-muted-foreground/60 mb-1">Recent</div>
+                  {feedHistory.map((url) => {
+                    const isCurrent = url === config.tar1090Url;
+                    return (
+                      <div key={url} className="flex items-center gap-1 group">
+                        <button
+                          onClick={() => !isCurrent && config.updateConfig({ tar1090Url: url })}
+                          className={`flex-1 text-left text-xs truncate font-mono py-0.5 transition-colors ${
+                            isCurrent
+                              ? 'text-foreground cursor-default'
+                              : 'text-muted-foreground hover:text-foreground cursor-pointer'
+                          }`}
+                          title={url}
+                        >
+                          {url}
+                        </button>
+                        <button
+                          onClick={() => removeFeedUrl(url)}
+                          className="shrink-0 text-muted-foreground/40 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 p-0.5"
+                          aria-label="Remove"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
