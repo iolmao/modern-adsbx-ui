@@ -6,6 +6,12 @@ Built with React 19, TypeScript, MapLibre GL, and Tailwind CSS.
 
 ---
 
+## Screenshots
+<img src="https://github.com/user-attachments/assets/21dc16bb-11a8-415e-8a63-422c17e456d2" width="800" />
+<img src="https://github.com/user-attachments/assets/6277f4f7-7ed7-4bda-ba9f-7a8a453b2cbe" width="300" />
+<img src="https://github.com/user-attachments/assets/2c475642-c3b4-4700-b316-716067f1f419" width="800" />
+<img src="https://github.com/user-attachments/assets/a42d977f-c277-4140-9eeb-506f4e88752d" width="800" />
+
 ## Features
 
 **Feed management**
