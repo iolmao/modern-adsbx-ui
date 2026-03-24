@@ -1,14 +1,109 @@
-# ADSB Tracker
+# modern-adsbx-ui
 
-A real-time ADS-B flight tracker built with React, TypeScript, and Leaflet. Connects to a local [tar1090](https://github.com/wiedehopf/tar1090) instance to display live aircraft positions on an interactive map.
+A fast, modern web UI for ADS-B flight tracking. Designed to run alongside [tar1090](https://github.com/wiedehopf/tar1090) or any adsbx-compatible feed on your own hardware.
 
-## Customizing Themes
+Built with React 19, TypeScript, MapLibre GL, and Tailwind CSS.
 
-Themes are visual presets that set the map tile layer, aircraft icon color, and trail color in one click. They appear in the **Themes** section of the settings panel.
+---
 
-### 1. Edit the theme definitions
+## Features
 
-Open `src/config/presets.json` and add, remove, or modify entries:
+**Feed management**
+- Paste any tar1090 or adsbx feed URL — the app connects instantly
+- Automatic CORS proxy fallback: works in the browser without touching your server config
+- Recent feed history saved in the browser, switchable with one click
+- "Use local feed" shortcut to return to auto-discovery mode
+- Feed type indicator (local network / external / auto-discovered)
+
+**Map and aircraft**
+- Smooth 60fps aircraft position interpolation between data refreshes
+- Flight trails with configurable color and length
+- Proportional icon sizing by altitude, or fixed size
+- Standard view (icons + labels) and minimal dot view
+- Click any aircraft to open a detail panel with flight data, navigation, and signal info
+
+**Labels**
+- Configurable label fields: display name, distance from your location
+- Per-aircraft labels toggle independently of the detail panel
+
+**Themes and appearance**
+- Built-in themes: OpenStreetMap, Satellite, Vintage Radar
+- Each theme sets map tile layer, aircraft icon color, and trail color in one click
+- Fine-grained color pickers for aircraft icons and trails (independent of themes)
+- Light / dark / system theme support
+
+**Settings**
+- All settings persist locally in the browser
+- Export configuration as JSON and import it on any other browser or device
+
+---
+
+## Installation
+
+### Requirements
+
+- Node.js 18 or later
+- A running tar1090 or adsbx instance on the same network (or any public feed URL)
+
+### Raspberry Pi / Linux
+
+```bash
+# Clone the repo
+git clone https://github.com/iolmao/modern-adsbx-ui.git
+cd modern-adsbx-ui
+
+# Install dependencies
+npm install
+
+# Build
+npm run build
+
+# Start the production server (default port 3000)
+npm start
+
+# Or on a custom port
+node server.cjs 8080
+```
+
+The server serves the built UI and acts as a proxy for CORS requests. You can run it as a background service with `systemd` or `pm2`.
+
+**systemd example** (`/etc/systemd/system/modern-adsbx.service`):
+
+```ini
+[Unit]
+Description=modern-adsbx-ui
+After=network.target
+
+[Service]
+WorkingDirectory=/home/pi/modern-adsbx-ui
+ExecStart=/usr/bin/node server.cjs 3000
+Restart=on-failure
+User=pi
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl enable modern-adsbx
+sudo systemctl start modern-adsbx
+```
+
+### Development
+
+```bash
+npm run dev
+```
+
+Vite dev server starts on `http://localhost:5173` with hot reload and the built-in proxy middleware enabled.
+
+---
+
+## Custom Themes
+
+Themes are defined in `src/config/presets.json`. Each entry sets the map style, aircraft color, and trail color, and shows up as a card in the Settings panel.
+
+### 1. Add a theme entry
 
 ```json
 [
@@ -40,9 +135,9 @@ Open `src/config/presets.json` and add, remove, or modify entries:
 | `esri-satellite` | ESRI World Imagery (satellite) |
 | `stamen-dark` | Stamen Toner Dark |
 
-### 2. Add the thumbnail image
+### 2. Add a thumbnail
 
-Place the preview image in `public/map-thumbnails/`. The filename must match the `thumbnail` field in `presets.json`.
+Place a preview image in `public/map-thumbnails/`. The filename must match the `thumbnail` field.
 
 Recommended size: **384×216px** (16:9).
 
@@ -51,7 +146,21 @@ public/
 └── map-thumbnails/
     ├── fr42.png
     ├── real-view.png
-    └── vintage-radar.png
+    └── my-theme.png
 ```
 
-If an image is missing, the theme card still appears — only the preview area will be blank.
+If the image is missing, the theme card still appears — only the preview area will be blank.
+
+### 3. Rebuild
+
+After editing `presets.json` or adding thumbnails, rebuild:
+
+```bash
+npm run build
+```
+
+---
+
+## License
+
+MIT
