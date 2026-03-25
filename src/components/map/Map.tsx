@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import MapGL, { NavigationControl, type ViewState, type MapRef } from 'react-map-gl/maplibre';
+import MapGL, { NavigationControl, ScaleControl, type ViewState, type MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useConfigStore } from '@/store/configStore';
 import { useUIStore } from '@/store/uiStore';
@@ -89,6 +89,7 @@ export function Map() {
         maxTileCacheSize={50}
       >
         <NavigationControl position="bottom-left" />
+        <ScaleControl position="bottom-right" unit="metric" />
 
         <AircraftTrailsCanvas aircraft={aircraft} history={history} />
 

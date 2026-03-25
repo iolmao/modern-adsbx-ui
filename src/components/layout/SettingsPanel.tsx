@@ -5,7 +5,7 @@ import { useAircraftStore } from '@/store/aircraftStore';
 import { Button } from '@/components/ui/button';
 import { exportConfig, importConfig } from '@/lib/storage/config';
 import { TILE_LAYERS } from '@/constants/map';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import PRESETS from '@/config/presets.json';
 import type { TileLayerType } from '@/types/config';
 import { useFeedHistory } from '@/hooks/useFeedHistory';
@@ -16,6 +16,31 @@ export function SettingsPanel() {
   const config = useConfigStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { history: feedHistory, addUrl: addFeedUrl, removeUrl: removeFeedUrl } = useFeedHistory();
+  const [geoLocating, setGeoLocating] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      setGeoError('Geolocation not supported by this browser.');
+      return;
+    }
+    setGeoLocating(true);
+    setGeoError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        config.updateConfig({
+          userLat: parseFloat(pos.coords.latitude.toFixed(6)),
+          userLon: parseFloat(pos.coords.longitude.toFixed(6)),
+        });
+        setGeoLocating(false);
+      },
+      () => {
+        setGeoError('Unable to retrieve location. Check browser permissions.');
+        setGeoLocating(false);
+      },
+      { timeout: 10000 }
+    );
+  };
 
   const handleExport = () => {
     const { updateConfig, resetConfig, ...configToExport } = config;
@@ -155,6 +180,18 @@ export function SettingsPanel() {
                   step="0.000001"
                 />
               </div>
+            </div>
+            <div className="flex justify-end mt-1">
+              {geoError
+                ? <span className="text-xs text-destructive">{geoError}</span>
+                : <button
+                    onClick={handleUseMyLocation}
+                    disabled={geoLocating}
+                    className="text-xs text-muted-foreground underline decoration-dotted hover:text-foreground transition-colors disabled:opacity-50"
+                  >
+                    {geoLocating ? 'Locating…' : 'Use my location'}
+                  </button>
+              }
             </div>
 
             {/* Themes */}

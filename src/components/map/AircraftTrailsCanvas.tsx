@@ -12,7 +12,7 @@ interface AircraftTrailsCanvasProps {
 
 export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvasProps) {
   const { current: mapInstance } = useMap();
-  const { showTrails, trailColor } = useConfigStore();
+  const { showTrails, trailColor, userLat, userLon } = useConfigStore();
   const { selectedAircraftHex, viewMode } = useUIStore();
   const animationFrameRef = useRef<number | null>(null);
   const needsRedrawRef = useRef(true);
@@ -24,6 +24,8 @@ export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvas
   const selectedHexRef = useRef(selectedAircraftHex);
   const trailColorRef = useRef(trailColor);
   const viewModeRef = useRef(viewMode);
+  const userLatRef = useRef(userLat);
+  const userLonRef = useRef(userLon);
 
   // Update refs and mark dirty — no canvas/loop restart needed
   useEffect(() => {
@@ -40,6 +42,12 @@ export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvas
     needsRedrawRef.current = true;
   }, [showTrails, selectedAircraftHex, trailColor, viewMode]);
 
+  useEffect(() => {
+    userLatRef.current = userLat;
+    userLonRef.current = userLon;
+    needsRedrawRef.current = true;
+  }, [userLat, userLon]);
+
   // Canvas + rAF loop — created once when the map mounts, torn down on unmount
   useEffect(() => {
     if (!mapInstance) return;
@@ -51,8 +59,7 @@ export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvas
     canvas.style.top = '0';
     canvas.style.left = '0';
     canvas.style.pointerEvents = 'none';
-    canvas.style.zIndex = '0';
-    map.getContainer().appendChild(canvas);
+    map.getCanvasContainer().appendChild(canvas);
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -76,6 +83,18 @@ export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvas
       const selHex = selectedHexRef.current;
       const trails = showTrailsRef.current;
       const mode = viewModeRef.current;
+
+      // Draw home position dot
+      const homeLat = userLatRef.current;
+      const homeLon = userLonRef.current;
+      if (homeLat !== null && homeLon !== null) {
+        const pt = map.project([homeLon, homeLat]);
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#000000';
+        ctx.globalAlpha = 1;
+        ctx.fill();
+      }
 
       ac.forEach((a) => {
         const shouldShow = mode === 'realistic' || trails || a.hex === selHex;
