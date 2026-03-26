@@ -27,6 +27,7 @@ Built with React 19, TypeScript, MapLibre GL, and Tailwind CSS.
 - Proportional icon sizing by altitude, or fixed size
 - Standard view (icons + labels) and minimal dot view
 - Click any aircraft to open a detail panel with flight data, navigation, and signal info
+- Aircraft registration and model (e.g. "BOEING 737-800") resolved from a local database, independent of the feed
 
 **Labels**
 - Configurable label fields: display name, distance from your location
@@ -64,7 +65,7 @@ If version is <18, you should update by following [this guide](https://gist.gith
 git clone https://github.com/iolmao/modern-adsbx-ui.git
 cd modern-adsbx-ui
 
-# Install dependencies
+# Install dependencies and download aircraft database (~8 MB, done automatically)
 npm install
 
 # Build
@@ -108,6 +109,27 @@ npm run dev
 ```
 
 Vite dev server starts on `http://localhost:5173` with hot reload and the built-in proxy middleware enabled.
+
+---
+
+## Aircraft Database
+
+Registration and aircraft model (e.g. "BOEING 737-800", "AIRBUS A320") are resolved from a local copy of the [tar1090-db](https://github.com/wiedehopf/tar1090-db) database, downloaded automatically during `npm install`.
+
+The database is stored at `data/aircraft.csv.gz` (~8 MB) and loaded into memory when the server starts. It works with any feed — public or local — and requires no internet access at runtime.
+
+```
+Aircraft database loaded: 462,000 entries   ← printed on server start
+```
+
+**To update the database** (e.g. after several months):
+
+```bash
+rm data/aircraft.csv.gz
+npm run download-db
+```
+
+If the file is absent (e.g. no internet during install), the server starts normally and simply omits registration and model info — no errors, no broken UI.
 
 ---
 

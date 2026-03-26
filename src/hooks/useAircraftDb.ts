@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 export interface AircraftDbEntry {
   reg: string;
   type: string;
+  desc: string;
 }
 
 // Module-level cache: hex → entry (or null if not found)

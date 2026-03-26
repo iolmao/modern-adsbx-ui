@@ -30,6 +30,7 @@ export function AircraftDetailPanel() {
   const dbEntry = useAircraftDb(selectedAircraftHex);
   const reg = aircraft?.r || dbEntry?.reg || undefined;
   const typeCode = aircraft?.t || dbEntry?.type || undefined;
+  const desc = aircraft?.desc || dbEntry?.desc || undefined;
   const [photoVisible, setPhotoVisible] = useState(false);
 
   useEffect(() => {
@@ -116,8 +117,8 @@ export function AircraftDetailPanel() {
         <div className="flex items-center justify-between p-4 border-b border-border/50">
           <div>
             <div className="font-semibold font-mono text-lg">{aircraft.displayName}</div>
-            {(aircraft.desc || typeCode) && (
-              <div className="text-xs text-muted-foreground">{aircraft.desc ?? typeCode}</div>
+            {(desc || typeCode) && (
+              <div className="text-xs text-muted-foreground">{desc ?? typeCode}</div>
             )}
           </div>
           <Button variant="ghost" size="icon" onClick={() => setDetailLevel(1)} className="h-7 w-7">

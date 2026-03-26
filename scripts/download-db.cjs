@@ -7,7 +7,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const URL = 'https://github.com/wiedehopf/tar1090-db/raw/csv/aircraft.csv.gz';
+const DB_URL = 'https://github.com/wiedehopf/tar1090-db/raw/csv/aircraft.csv.gz';
 const DEST = path.join(__dirname, '..', 'data', 'aircraft.csv.gz');
 
 function download(url, dest, redirectsLeft = 5) {
@@ -39,5 +39,10 @@ function download(url, dest, redirectsLeft = 5) {
   });
 }
 
+if (fs.existsSync(DEST)) {
+  console.log('Aircraft database already present, skipping download. Delete data/aircraft.csv.gz to force re-download.');
+  process.exit(0);
+}
+
 console.log('Downloading aircraft database from tar1090-db...');
-download(URL, DEST);
+download(DB_URL, DEST);

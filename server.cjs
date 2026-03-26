@@ -22,12 +22,17 @@ function loadAircraftDb() {
   const gunzip = zlib.createGunzip();
   const stream = fs.createReadStream(DB_PATH).pipe(gunzip);
   const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
-  let header = true;
   let count = 0;
   rl.on('line', (line) => {
-    if (header) { header = false; return; } // skip header row
-    const [icao, r, t] = line.split(',');
-    if (icao) aircraftDb.set(icao.toLowerCase(), { reg: r || '', type: t || '' });
+    // Format: ICAO;reg;type;flags;description;...  (semicolon-separated, no header, uppercase hex)
+    const parts = line.split(';');
+    const icao = parts[0];
+    if (!icao) return;
+    aircraftDb.set(icao.toLowerCase(), {
+      reg:  parts[1] || '',
+      type: parts[2] || '',
+      desc: parts[4] || '',
+    });
     count++;
   });
   rl.on('close', () => console.log(`Aircraft database loaded: ${count.toLocaleString()} entries`));
