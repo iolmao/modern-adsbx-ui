@@ -44,5 +44,6 @@ if (fs.existsSync(DEST)) {
   process.exit(0);
 }
 
+fs.mkdirSync(path.dirname(DEST), { recursive: true });
 console.log('Downloading aircraft database from tar1090-db...');
 download(DB_URL, DEST);
