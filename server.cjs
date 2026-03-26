@@ -3,10 +3,38 @@
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
+const zlib = require('zlib');
 const path = require('path');
+const readline = require('readline');
 
 const PORT = process.env.PORT || process.argv[2] || 3000;
 const DIST = path.join(__dirname, 'dist');
+const DB_PATH = path.join(__dirname, 'data', 'aircraft.csv.gz');
+
+// In-memory aircraft db: hex (lowercase) → { reg, type }
+const aircraftDb = new Map();
+
+function loadAircraftDb() {
+  if (!fs.existsSync(DB_PATH)) {
+    console.log('Aircraft database not found — run "npm run download-db" to enable type/registration lookups.');
+    return;
+  }
+  const gunzip = zlib.createGunzip();
+  const stream = fs.createReadStream(DB_PATH).pipe(gunzip);
+  const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
+  let header = true;
+  let count = 0;
+  rl.on('line', (line) => {
+    if (header) { header = false; return; } // skip header row
+    const [icao, r, t] = line.split(',');
+    if (icao) aircraftDb.set(icao.toLowerCase(), { reg: r || '', type: t || '' });
+    count++;
+  });
+  rl.on('close', () => console.log(`Aircraft database loaded: ${count.toLocaleString()} entries`));
+  rl.on('error', (e) => console.error('Error loading aircraft database:', e.message));
+}
+
+loadAircraftDb();
 
 const MIME = {
   '.html': 'text/html',
@@ -20,6 +48,15 @@ const MIME = {
 
 http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
+
+  // Aircraft database lookup
+  if (url.pathname.startsWith('/api/aircraft-db/')) {
+    const hex = url.pathname.slice('/api/aircraft-db/'.length).toLowerCase();
+    const entry = aircraftDb.get(hex);
+    res.writeHead(entry ? 200 : 404, { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=86400' });
+    res.end(JSON.stringify(entry || null));
+    return;
+  }
 
   // Proxy endpoint
   if (url.pathname === '/proxy') {

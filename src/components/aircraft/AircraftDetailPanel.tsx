@@ -4,6 +4,7 @@ import { useUIStore } from '@/store/uiStore';
 import { useConfigStore } from '@/store/configStore';
 import { useSelectedAircraft } from '@/hooks/useSelectedAircraft';
 import { useAircraftPhoto } from '@/hooks/useAircraftPhoto';
+import { useAircraftDb } from '@/hooks/useAircraftDb';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +27,9 @@ export function AircraftDetailPanel() {
   const { displayUnits } = useConfigStore();
   const aircraft = useSelectedAircraft();
   const { photo } = useAircraftPhoto(selectedAircraftHex);
+  const dbEntry = useAircraftDb(selectedAircraftHex);
+  const reg = aircraft?.r || dbEntry?.reg || undefined;
+  const typeCode = aircraft?.t || dbEntry?.type || undefined;
   const [photoVisible, setPhotoVisible] = useState(false);
 
   useEffect(() => {
@@ -112,8 +116,8 @@ export function AircraftDetailPanel() {
         <div className="flex items-center justify-between p-4 border-b border-border/50">
           <div>
             <div className="font-semibold font-mono text-lg">{aircraft.displayName}</div>
-            {(aircraft.desc || aircraft.t) && (
-              <div className="text-xs text-muted-foreground">{aircraft.desc ?? aircraft.t}</div>
+            {(aircraft.desc || typeCode) && (
+              <div className="text-xs text-muted-foreground">{aircraft.desc ?? typeCode}</div>
             )}
           </div>
           <Button variant="ghost" size="icon" onClick={() => setDetailLevel(1)} className="h-7 w-7">
@@ -136,8 +140,8 @@ export function AircraftDetailPanel() {
           {/* Identity */}
           <Section title="Identity">
             <Row label="ICAO" value={aircraft.hex.toUpperCase()} mono />
-            {aircraft.r && <Row label="Registration" value={aircraft.r} mono />}
-            {aircraft.t && <Row label="Type code" value={aircraft.t} mono />}
+            {reg && <Row label="Registration" value={reg} mono />}
+            {typeCode && <Row label="Type code" value={typeCode} mono />}
             {aircraft.category && <Row label="Category" value={getCategoryLabel(aircraft.category)} />}
           </Section>
 
