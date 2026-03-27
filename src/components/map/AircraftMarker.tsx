@@ -17,8 +17,17 @@ interface AircraftMarkerProps {
   onClick: (hex: string) => void;
 }
 
+function getShadow(alt: number | 'ground' | undefined): string {
+  if (alt === 'ground' || alt === undefined) return 'drop-shadow(0px 1px 0px rgba(0,0,0,0.35))';
+  const factor = Math.min(alt / 45000, 1);
+  const offset = Math.round(1 + factor * 9);   // 1px → 10px
+  const blur   = Math.round(factor * 4);        // 0px → 4px
+  const alpha  = (0.35 - factor * 0.1).toFixed(2); // 0.35 → 0.25
+  return `drop-shadow(0px ${offset}px ${blur}px rgba(0,0,0,${alpha}))`;
+}
+
 export const AircraftMarker = memo(({ aircraft, onClick }: AircraftMarkerProps) => {
-  const { aircraftIconColor } = useConfigStore();
+  const { aircraftIconColor, useProportionalSize } = useConfigStore();
 
   if (aircraft.lat === undefined || aircraft.lon === undefined) return null;
 
@@ -45,7 +54,7 @@ export const AircraftMarker = memo(({ aircraft, onClick }: AircraftMarkerProps) 
           width: aircraft.iconSize,
           height: aircraft.iconSize,
           zIndex: 10,
-          filter: 'drop-shadow(0px 4px 0px rgba(0, 0, 0, 0.4))',
+          filter: useProportionalSize ? getShadow(aircraft.alt_baro) : 'drop-shadow(0px 4px 0px rgba(0,0,0,0.4))',
         }}
       >
         {aircraft.isEmergency && (
