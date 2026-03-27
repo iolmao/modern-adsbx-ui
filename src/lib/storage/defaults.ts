@@ -8,7 +8,7 @@ export const DEFAULT_CONFIG: UserConfig = {
   aircraftIconColor: '#ffffff',
   trailColor: '#00ff00',
   useProportionalSize: true,
-  fixedAircraftSize: 14,
+  fixedAircraftSize: 24,
   showLabels: true,
   showNameInLabel: true,
   showDistanceInLabel: true,

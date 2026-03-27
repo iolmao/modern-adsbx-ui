@@ -9,6 +9,7 @@ import { useRef, useState } from 'react';
 import PRESETS from '@/config/presets.json';
 import type { TileLayerType } from '@/types/config';
 import { useFeedHistory } from '@/hooks/useFeedHistory';
+import { Toggle } from '@/components/ui/toggle';
 
 export function SettingsPanel() {
   const { settingsPanelOpen, setSettingsPanelOpen } = useUIStore();
@@ -310,12 +311,7 @@ export function SettingsPanel() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-foreground">Show Labels</label>
-                <input
-                  type="checkbox"
-                  checked={config.showLabels}
-                  onChange={(e) => config.updateConfig({ showLabels: e.target.checked })}
-                  className="w-4 h-4 cursor-pointer"
-                />
+                <Toggle checked={config.showLabels} onChange={(v) => config.updateConfig({ showLabels: v })} />
               </div>
 
               <div className={`flex items-center justify-between pl-6 ${!config.showLabels ? 'opacity-50' : ''}`}>
@@ -347,12 +343,28 @@ export function SettingsPanel() {
 
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium text-foreground">Show Trails</label>
-              <input
-                type="checkbox"
-                checked={config.showTrails}
-                onChange={(e) => config.updateConfig({ showTrails: e.target.checked })}
-                className="w-4 h-4 cursor-pointer"
-              />
+              <Toggle checked={config.showTrails} onChange={(v) => config.updateConfig({ showTrails: v })} />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-foreground">Icon size by altitude</label>
+                <Toggle checked={config.useProportionalSize} onChange={(v) => config.updateConfig({ useProportionalSize: v })} />
+              </div>
+              {!config.useProportionalSize && (
+                <div className="flex items-center gap-3 pl-1">
+                  <label className="text-sm text-muted-foreground shrink-0">Icon size</label>
+                  <input
+                    type="range"
+                    min={12}
+                    max={48}
+                    step={1}
+                    value={config.fixedAircraftSize}
+                    onChange={(e) => config.updateConfig({ fixedAircraftSize: Number(e.target.value) })}
+                    className="w-full cursor-pointer"
+                  />
+                </div>
+              )}
             </div>
 
             <div>
