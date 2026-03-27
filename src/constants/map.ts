@@ -9,9 +9,9 @@ export const TILE_LAYERS: TileLayer[] = [
   },
   {
     id: 'stamen-dark',
-    name: 'Stamen Toner Dark',
-    url: 'https://tiles.stadiamaps.com/tiles/stamen_toner_dark/{z}/{x}/{y}.png',
-    attribution: '&copy; Stamen Design &copy; Stadia Maps',
+    name: 'Dark',
+    url: 'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
   },
   {
     id: 'esri-satellite',

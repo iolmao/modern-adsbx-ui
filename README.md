@@ -23,8 +23,12 @@ Built with React 19, TypeScript, MapLibre GL, and Tailwind CSS.
 
 **Map and aircraft**
 - Smooth 60fps aircraft position interpolation between data refreshes
-- Flight trails with configurable color and length
-- Proportional icon sizing by altitude, or fixed size
+- Flight trails rendered behind aircraft icons (correct z-order)
+- Map scale bar (metric) bottom-right
+- Home position dot on the map when coordinates are set
+- Proportional icon sizing by altitude, or fixed size with slider
+- Distinct icons for airliners, business jets, small GA, helicopters, fighter jets, drones
+- Icon type resolved from ICAO type code (e.g. C25A → bizjet, EC35 → helicopter)
 - Standard view (icons + labels) and minimal dot view
 - Click any aircraft to open a detail panel with flight data, navigation, and signal info
 - Aircraft registration and model (e.g. "BOEING 737-800") resolved from a local database, independent of the feed
@@ -34,7 +38,7 @@ Built with React 19, TypeScript, MapLibre GL, and Tailwind CSS.
 - Per-aircraft labels toggle independently of the detail panel
 
 **Themes and appearance**
-- Built-in themes: OpenStreetMap, Satellite, Vintage Radar
+- Built-in themes: OpenStreetMap, Dark (CartoDB), Satellite
 - Each theme sets map tile layer, aircraft icon color, and trail color in one click
 - Fine-grained color pickers for aircraft icons and trails (independent of themes)
 - Light / dark / system theme support
@@ -42,6 +46,7 @@ Built with React 19, TypeScript, MapLibre GL, and Tailwind CSS.
 **Settings**
 - All settings persist locally in the browser
 - Export configuration as JSON and import it on any other browser or device
+- "Use my location" button to populate coordinates from the browser's geolocation API
 
 ---
 
@@ -167,7 +172,7 @@ Themes are defined in `src/config/presets.json`. Each entry sets the map style, 
 |---|---|
 | `osm` | OpenStreetMap |
 | `esri-satellite` | ESRI World Imagery (satellite) |
-| `stamen-dark` | Stamen Toner Dark |
+| `stamen-dark` | Dark (CartoDB Dark Matter) |
 
 ### 2. Add a thumbnail
 
