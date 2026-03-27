@@ -11,6 +11,17 @@ const cache = new Map<string, AircraftDbEntry | null>();
 // In-flight requests to avoid duplicate fetches
 const pending = new Map<string, Promise<AircraftDbEntry | null>>();
 
+/** Sync read from cache — returns undefined if not yet fetched */
+export function getCachedDbEntry(hex: string): AircraftDbEntry | null | undefined {
+  return cache.has(hex) ? cache.get(hex) : undefined;
+}
+
+/** Fire-and-forget prefetch — populates cache without React */
+export function prefetchDbEntry(hex: string): void {
+  if (cache.has(hex) || pending.has(hex)) return;
+  fetchEntry(hex).then((result) => cache.set(hex, result));
+}
+
 async function fetchEntry(hex: string): Promise<AircraftDbEntry | null> {
   if (pending.has(hex)) return pending.get(hex)!;
   const p = fetch(`/api/aircraft-db/${hex.toLowerCase()}`)

@@ -4,11 +4,13 @@ import type { EnhancedAircraft } from '@/types/aircraft';
 import { useConfigStore } from '@/store/configStore';
 import { EMERGENCY_COLOR } from '@/lib/colors/emergency';
 import { getAircraftIcon } from '@/lib/icons/aircraftIcon';
+import { getCachedDbEntry, prefetchDbEntry } from '@/hooks/useAircraftDb';
 import { AirplaneIcon } from '@/components/icons/AirplaneIcon';
 import { HeliIcon } from '@/components/icons/HeliIcon';
 import { FjetIcon } from '@/components/icons/FjetIcon';
 import { PlaneIcon } from '@/components/icons/PlaneIcon';
 import { DroneIcon } from '@/components/icons/DroneIcon';
+import { BizjetIcon } from '@/components/icons/BizjetIcon';
 
 interface AircraftMarkerProps {
   aircraft: EnhancedAircraft;
@@ -21,7 +23,10 @@ export const AircraftMarker = memo(({ aircraft, onClick }: AircraftMarkerProps) 
   if (aircraft.lat === undefined || aircraft.lon === undefined) return null;
 
   const rotation = aircraft.track ?? 0;
-  const iconPath = getAircraftIcon(aircraft.category);
+  // Use type from live feed, or fall back to db cache (populated lazily)
+  const typeCode = aircraft.t ?? getCachedDbEntry(aircraft.hex)?.type;
+  if (!aircraft.t) prefetchDbEntry(aircraft.hex);
+  const iconPath = getAircraftIcon(aircraft.category, typeCode);
   const color = aircraft.isEmergency ? EMERGENCY_COLOR : aircraftIconColor;
 
   return (
@@ -80,6 +85,12 @@ export const AircraftMarker = memo(({ aircraft, onClick }: AircraftMarkerProps) 
           />
         ) : iconPath === '/drone.svg' ? (
           <DroneIcon
+            color={color}
+            rotation={rotation}
+            size={aircraft.iconSize}
+          />
+        ) : iconPath === '/bizjet.svg' ? (
+          <BizjetIcon
             color={color}
             rotation={rotation}
             size={aircraft.iconSize}
