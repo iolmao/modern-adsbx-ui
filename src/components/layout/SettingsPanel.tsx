@@ -11,6 +11,8 @@ import type { TileLayerType } from '@/types/config';
 import { useFeedHistory } from '@/hooks/useFeedHistory';
 import { Toggle } from '@/components/ui/toggle';
 
+const PUBLIC_FEED_URL = 'https://map.1090mhz.uk/tar1090/data/aircraft.json';
+
 export function SettingsPanel() {
   const { settingsPanelOpen, setSettingsPanelOpen } = useUIStore();
   const { error: feedError } = useAircraftStore();
@@ -92,14 +94,24 @@ export function SettingsPanel() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-sm font-medium text-foreground">Feed URL</label>
-                {config.tar1090Url && (
-                  <button
-                    onClick={() => config.updateConfig({ tar1090Url: '' })}
-                    className="text-xs text-muted-foreground underline decoration-dotted hover:text-foreground transition-colors"
-                  >
-                    use local feed
-                  </button>
-                )}
+                <div className="flex gap-3">
+                  {config.tar1090Url !== PUBLIC_FEED_URL && (
+                    <button
+                      onClick={() => config.updateConfig({ tar1090Url: PUBLIC_FEED_URL })}
+                      className="text-xs text-muted-foreground underline decoration-dotted hover:text-foreground transition-colors"
+                    >
+                      use public feed
+                    </button>
+                  )}
+                  {config.tar1090Url && (
+                    <button
+                      onClick={() => config.updateConfig({ tar1090Url: '' })}
+                      className="text-xs text-muted-foreground underline decoration-dotted hover:text-foreground transition-colors"
+                    >
+                      use local feed
+                    </button>
+                  )}
+                </div>
               </div>
               <input
                 type="text"
@@ -158,41 +170,43 @@ export function SettingsPanel() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block text-foreground">Latitude</label>
-                <input
-                  type="number"
-                  value={config.userLat ?? ''}
-                  onChange={(e) => config.updateConfig({ userLat: e.target.value ? Number(e.target.value) : null })}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
-                  placeholder="45.0"
-                  step="0.000001"
-                />
+            <div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block text-foreground">Latitude</label>
+                  <input
+                    type="number"
+                    value={config.userLat ?? ''}
+                    onChange={(e) => config.updateConfig({ userLat: e.target.value ? Number(e.target.value) : null })}
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
+                    placeholder="45.0"
+                    step="0.000001"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block text-foreground">Longitude</label>
+                  <input
+                    type="number"
+                    value={config.userLon ?? ''}
+                    onChange={(e) => config.updateConfig({ userLon: e.target.value ? Number(e.target.value) : null })}
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
+                    placeholder="0.0"
+                    step="0.000001"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block text-foreground">Longitude</label>
-                <input
-                  type="number"
-                  value={config.userLon ?? ''}
-                  onChange={(e) => config.updateConfig({ userLon: e.target.value ? Number(e.target.value) : null })}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
-                  placeholder="0.0"
-                  step="0.000001"
-                />
+              <div className="flex justify-end mt-1">
+                {geoError
+                  ? <span className="text-xs text-destructive">{geoError}</span>
+                  : <button
+                      onClick={handleUseMyLocation}
+                      disabled={geoLocating}
+                      className="text-xs text-muted-foreground underline decoration-dotted hover:text-foreground transition-colors disabled:opacity-50"
+                    >
+                      {geoLocating ? 'Locating…' : 'Use my location'}
+                    </button>
+                }
               </div>
-            </div>
-            <div className="flex justify-end mt-1">
-              {geoError
-                ? <span className="text-xs text-destructive">{geoError}</span>
-                : <button
-                    onClick={handleUseMyLocation}
-                    disabled={geoLocating}
-                    className="text-xs text-muted-foreground underline decoration-dotted hover:text-foreground transition-colors disabled:opacity-50"
-                  >
-                    {geoLocating ? 'Locating…' : 'Use my location'}
-                  </button>
-              }
             </div>
 
             {/* Themes */}
@@ -268,7 +282,7 @@ export function SettingsPanel() {
                         width="28"
                         height="28"
                         viewBox="0 0 512 512"
-                        style={{ transform: 'rotate(45deg)' }}
+                        style={{ transform: 'rotate(45deg)', filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.45))' }}
                       >
                         <path
                           fill={config.aircraftIconColor}

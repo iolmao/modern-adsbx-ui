@@ -64,6 +64,10 @@ export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvas
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const locationImg = new Image();
+    locationImg.src = '/location.svg';
+    locationImg.onload = () => { needsRedrawRef.current = true; };
+
     const drawTrails = () => {
       const mapCanvas = map.getCanvas();
       const width = mapCanvas.clientWidth;
@@ -84,16 +88,15 @@ export function AircraftTrailsCanvas({ aircraft, history }: AircraftTrailsCanvas
       const trails = showTrailsRef.current;
       const mode = viewModeRef.current;
 
-      // Draw home position dot
+      // Draw home position icon
       const homeLat = userLatRef.current;
       const homeLon = userLonRef.current;
-      if (homeLat !== null && homeLon !== null) {
+      if (homeLat !== null && homeLon !== null && locationImg.complete && locationImg.naturalWidth > 0) {
         const pt = map.project([homeLon, homeLat]);
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#000000';
+        const size = 22;
         ctx.globalAlpha = 1;
-        ctx.fill();
+        // Pin tip is at ~65% of icon height — align tip to coordinate
+        ctx.drawImage(locationImg, pt.x - size / 2, pt.y - size * 0.65, size, size);
       }
 
       ac.forEach((a) => {

@@ -16,7 +16,7 @@ export function Toggle({ checked, onChange, disabled = false }: ToggleProps) {
       }`}
     >
       <span
-        className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-200 ease-in-out ${
+        className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white dark:bg-zinc-900 shadow-md transform transition-transform duration-200 ease-in-out ${
           checked ? 'translate-x-5' : 'translate-x-0'
         }`}
       />

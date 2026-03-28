@@ -2,6 +2,9 @@
 
 @import "tailwindcss";
 
+/* Make dark: variants respond to the .dark class (Tailwind v4) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Light mode colors */
 :root {
   --color-border: #e5e5e5;
