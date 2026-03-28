@@ -17,6 +17,26 @@ if (fs.existsSync(dbPath)) {
   });
 }
 
+// Shared routes + airports db for dev server
+const devRoutesDb = new Map<string, string>();
+const devAirportsDb = new Map<string, { iata: string; location: string; lat: number; lng: number }>();
+const routesPath = path.resolve(__dirname, 'data/routes.csv.gz');
+const airportsPath = path.resolve(__dirname, 'data/airports-routes.csv.gz');
+if (fs.existsSync(routesPath) && fs.existsSync(airportsPath)) {
+  readline.createInterface({ input: fs.createReadStream(airportsPath).pipe(zlib.createGunzip()), crlfDelay: Infinity })
+    .on('line', (line: string) => {
+      const i = line.indexOf(';');
+      if (i < 0) return;
+      const parts = line.slice(i + 1).split(';');
+      devAirportsDb.set(line.slice(0, i), { iata: parts[0] || '', location: parts[1] || '', lat: parseFloat(parts[2]) || 0, lng: parseFloat(parts[3]) || 0 });
+    });
+  readline.createInterface({ input: fs.createReadStream(routesPath).pipe(zlib.createGunzip()), crlfDelay: Infinity })
+    .on('line', (line: string) => {
+      const i = line.indexOf(';');
+      if (i > 0) devRoutesDb.set(line.slice(0, i), line.slice(i + 1));
+    });
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -29,6 +49,22 @@ export default defineConfig({
           const entry = devAircraftDb.get(hex);
           res.writeHead(entry ? 200 : 404, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(entry || null));
+        });
+
+        server.middlewares.use('/api/route', (req: IncomingMessage, res: ServerResponse) => {
+          const callsign = decodeURIComponent((req.url ?? '').replace(/^\//, '')).trim().toUpperCase();
+          const airportCodes = devRoutesDb.get(callsign);
+          if (!airportCodes) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(null));
+            return;
+          }
+          const airports = airportCodes.split('-').map((code) => {
+            const apt = devAirportsDb.get(code);
+            return { code, iata: apt?.iata ?? '', location: apt?.location ?? '', lat: apt?.lat ?? 0, lng: apt?.lng ?? 0 };
+          });
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ callsign, airports }));
         });
 
         server.middlewares.use('/proxy', async (req: IncomingMessage, res: ServerResponse) => {

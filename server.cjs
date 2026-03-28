@@ -10,9 +10,15 @@ const readline = require('readline');
 const PORT = process.env.PORT || process.argv[2] || 3000;
 const DIST = path.join(__dirname, 'dist');
 const DB_PATH = path.join(__dirname, 'data', 'aircraft.csv.gz');
+const ROUTES_PATH = path.join(__dirname, 'data', 'routes.csv.gz');
+const AIRPORTS_PATH = path.join(__dirname, 'data', 'airports-routes.csv.gz');
 
 // In-memory aircraft db: hex (lowercase) → { reg, type }
 const aircraftDb = new Map();
+// In-memory routes db: callsign (uppercase) → "ICAO1-ICAO2-..."
+const routesDb = new Map();
+// In-memory airports db: code → { iata, location, lat, lng }
+const airportsDb = new Map();
 
 function loadAircraftDb() {
   if (!fs.existsSync(DB_PATH)) {
@@ -39,7 +45,31 @@ function loadAircraftDb() {
   rl.on('error', (e) => console.error('Error loading aircraft database:', e.message));
 }
 
+function loadRoutesDb() {
+  if (!fs.existsSync(ROUTES_PATH) || !fs.existsSync(AIRPORTS_PATH)) {
+    console.log('Routes database not found — run "npm run download-routes" to enable route lookups.');
+    return;
+  }
+  const aptRl = readline.createInterface({ input: fs.createReadStream(AIRPORTS_PATH).pipe(zlib.createGunzip()), crlfDelay: Infinity });
+  aptRl.on('line', (line) => {
+    const i = line.indexOf(';');
+    if (i < 0) return;
+    const code = line.slice(0, i);
+    const parts = line.slice(i + 1).split(';');
+    airportsDb.set(code, { iata: parts[0] || '', location: parts[1] || '', lat: parseFloat(parts[2]) || 0, lng: parseFloat(parts[3]) || 0 });
+  });
+
+  const rtRl = readline.createInterface({ input: fs.createReadStream(ROUTES_PATH).pipe(zlib.createGunzip()), crlfDelay: Infinity });
+  let count = 0;
+  rtRl.on('line', (line) => {
+    const i = line.indexOf(';');
+    if (i > 0) { routesDb.set(line.slice(0, i), line.slice(i + 1)); count++; }
+  });
+  rtRl.on('close', () => console.log(`Routes database loaded: ${count.toLocaleString()} routes, ${airportsDb.size.toLocaleString()} airports`));
+}
+
 loadAircraftDb();
+loadRoutesDb();
 
 const MIME = {
   '.html': 'text/html',
@@ -60,6 +90,24 @@ http.createServer(async (req, res) => {
     const entry = aircraftDb.get(hex);
     res.writeHead(entry ? 200 : 404, { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=86400' });
     res.end(JSON.stringify(entry || null));
+    return;
+  }
+
+  // Route lookup by callsign
+  if (url.pathname.startsWith('/api/route/')) {
+    const callsign = decodeURIComponent(url.pathname.slice('/api/route/'.length)).trim().toUpperCase();
+    const airportCodes = routesDb.get(callsign);
+    if (!airportCodes) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(null));
+      return;
+    }
+    const airports = airportCodes.split('-').map((code) => {
+      const apt = airportsDb.get(code);
+      return { code, iata: apt?.iata || '', location: apt?.location || '', lat: apt?.lat || 0, lng: apt?.lng || 0 };
+    });
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=86400' });
+    res.end(JSON.stringify({ callsign, airports }));
     return;
   }
 

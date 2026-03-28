@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "start": "node server.cjs",
     "download-db": "node scripts/download-db.cjs",
-    "postinstall": "node scripts/download-db.cjs"
+    "download-routes": "node scripts/download-routes-db.cjs",
+    "postinstall": "node scripts/download-db.cjs && node scripts/download-routes-db.cjs"
   },
   "dependencies": {
     "@types/maplibre-gl": "^1.13.2",

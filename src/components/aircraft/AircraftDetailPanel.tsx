@@ -5,6 +5,7 @@ import { useConfigStore } from '@/store/configStore';
 import { useSelectedAircraft } from '@/hooks/useSelectedAircraft';
 import { useAircraftPhoto } from '@/hooks/useAircraftPhoto';
 import { useAircraftDb } from '@/hooks/useAircraftDb';
+import { useFlightRoute } from '@/hooks/useFlightRoute';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +29,7 @@ export function AircraftDetailPanel() {
   const aircraft = useSelectedAircraft();
   const { photo } = useAircraftPhoto(selectedAircraftHex);
   const dbEntry = useAircraftDb(selectedAircraftHex);
+  const route = useFlightRoute(aircraft?.flight);
   const reg = aircraft?.r || dbEntry?.reg || undefined;
   const typeCode = aircraft?.t || dbEntry?.type || undefined;
   const desc = aircraft?.desc || dbEntry?.desc || undefined;
@@ -81,7 +83,7 @@ export function AircraftDetailPanel() {
               )}
             </div>
             <div className="bg-background/95 backdrop-blur-md p-3">
-              <CompactStats aircraft={aircraft} displayUnits={displayUnits} />
+              <CompactStats aircraft={aircraft} displayUnits={displayUnits} route={route} />
               <MoreButton open={showSidePanel} onClick={() => setDetailLevel(showSidePanel ? 1 : 2)} />
             </div>
           </div>
@@ -101,7 +103,7 @@ export function AircraftDetailPanel() {
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            <CompactStats aircraft={aircraft} displayUnits={displayUnits} />
+            <CompactStats aircraft={aircraft} displayUnits={displayUnits} route={route} />
             <MoreButton open={showSidePanel} onClick={() => setDetailLevel(showSidePanel ? 1 : 2)} />
           </div>
         )}
@@ -146,6 +148,13 @@ export function AircraftDetailPanel() {
             {aircraft.category && <Row label="Category" value={getCategoryLabel(aircraft.category)} />}
           </Section>
 
+          {/* Route */}
+          {route && route.airports.length >= 2 && (
+            <Section title="Route">
+              <RouteDisplay airports={route.airports} />
+            </Section>
+          )}
+
           {/* Flight */}
           <Section title="Flight data">
             <Row label="Altitude" value={formatAltitudeBrief(aircraft.alt_baro, displayUnits) + (aircraft.baro_rate !== undefined ? ' ' + formatVertRateBrief(aircraft.baro_rate) : '')} mono />
@@ -180,7 +189,40 @@ export function AircraftDetailPanel() {
   );
 }
 
-function CompactStats({ aircraft, displayUnits }: { aircraft: EnhancedAircraft; displayUnits: import('@/types/config').DisplayUnits }) {
+function RouteDisplay({ airports }: { airports: import('@/hooks/useFlightRoute').AirportInfo[] }) {
+  const origin = airports[0];
+  const destination = airports[airports.length - 1];
+  const via = airports.slice(1, -1);
+  const label = (apt: import('@/hooks/useFlightRoute').AirportInfo) => apt.iata || apt.code;
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-xs text-muted-foreground shrink-0">From</span>
+        <span className="text-sm font-mono text-right">{label(origin)}{origin.location ? ` – ${origin.location}` : ''}</span>
+      </div>
+      {via.length > 0 && (
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-xs text-muted-foreground shrink-0">Via</span>
+          <span className="text-sm font-mono text-right">{via.map(label).join(' · ')}</span>
+        </div>
+      )}
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-xs text-muted-foreground shrink-0">To</span>
+        <span className="text-sm font-mono text-right">{label(destination)}{destination.location ? ` – ${destination.location}` : ''}</span>
+      </div>
+    </div>
+  );
+}
+
+function CompactStats({ aircraft, displayUnits, route }: { aircraft: EnhancedAircraft; displayUnits: import('@/types/config').DisplayUnits; route: import('@/hooks/useFlightRoute').FlightRoute | null }) {
+  const routeLabel = (() => {
+    if (!route || route.airports.length < 2) return null;
+    const label = (apt: import('@/hooks/useFlightRoute').AirportInfo) => apt.iata || apt.code;
+    const origin = label(route.airports[0]);
+    const dest = label(route.airports[route.airports.length - 1]);
+    return `${origin} → ${dest}`;
+  })();
+
   return (
     <div className="grid grid-cols-2 gap-2 text-sm">
       <div>
@@ -203,8 +245,8 @@ function CompactStats({ aircraft, displayUnits }: { aircraft: EnhancedAircraft; 
         </div>
       )}
       <div>
-        <div className="text-xs text-muted-foreground">Track</div>
-        <div className="font-mono">{formatTrackBrief(aircraft.track)}</div>
+        <div className="text-xs text-muted-foreground">{routeLabel ? 'Route' : 'Track'}</div>
+        <div className="font-mono">{routeLabel ?? formatTrackBrief(aircraft.track)}</div>
       </div>
     </div>
   );

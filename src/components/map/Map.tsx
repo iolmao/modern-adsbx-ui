@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import MapGL, { NavigationControl, ScaleControl, type ViewState, type MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useConfigStore } from '@/store/configStore';
@@ -12,6 +12,7 @@ import { AircraftDot } from './AircraftDot';
 import { AircraftLabel } from './AircraftLabel';
 import { AircraftTrailsCanvas } from './AircraftTrailsCanvas';
 import { AircraftDetailPanel } from '@/components/aircraft/AircraftDetailPanel';
+import { FlightRouteLine } from './FlightRouteLine';
 
 export function Map() {
   const { tileLayer, showLabels, userLat, userLon, refreshInterval } = useConfigStore();
@@ -34,6 +35,27 @@ export function Map() {
   });
 
   const selectedLayer = TILE_LAYERS.find((l) => l.id === tileLayer) ?? TILE_LAYERS[0];
+
+  const mapStyle = useMemo(() => ({
+    version: 8 as const,
+    sources: {
+      'raster-tiles': {
+        type: 'raster' as const,
+        tiles: [selectedLayer.url],
+        tileSize: 256,
+        attribution: selectedLayer.attribution,
+      },
+    },
+    layers: [
+      {
+        id: 'simple-tiles',
+        type: 'raster' as const,
+        source: 'raster-tiles',
+        minzoom: 0,
+        maxzoom: 22,
+      },
+    ],
+  }), [selectedLayer]);
 
   const updateBounds = useCallback(() => {
     if (mapRef.current) {
@@ -65,26 +87,7 @@ export function Map() {
         {...viewState}
         onMove={handleMove}
         onLoad={updateBounds}
-        mapStyle={{
-          version: 8,
-          sources: {
-            'raster-tiles': {
-              type: 'raster',
-              tiles: [selectedLayer.url],
-              tileSize: 256,
-              attribution: selectedLayer.attribution,
-            },
-          },
-          layers: [
-            {
-              id: 'simple-tiles',
-              type: 'raster',
-              source: 'raster-tiles',
-              minzoom: 0,
-              maxzoom: 22,
-            },
-          ],
-        }}
+        mapStyle={mapStyle}
         style={{ width: '100%', height: '100%' }}
         maxTileCacheSize={50}
       >
@@ -92,6 +95,7 @@ export function Map() {
         <ScaleControl position="bottom-right" unit="metric" />
 
         <AircraftTrailsCanvas aircraft={aircraft} history={history} />
+        <FlightRouteLine />
 
         {aircraft.map((ac) => (
           <div key={ac.hex}>

@@ -39,6 +39,11 @@ function download(url, dest, redirectsLeft = 5) {
   });
 }
 
+if (process.env.NETLIFY) {
+  console.log('Netlify build detected — skipping aircraft database download (not used in static deployment).');
+  process.exit(0);
+}
+
 if (fs.existsSync(DEST)) {
   console.log('Aircraft database already present, skipping download. Delete data/aircraft.csv.gz to force re-download.');
   process.exit(0);
