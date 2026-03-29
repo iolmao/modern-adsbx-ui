@@ -12,12 +12,15 @@ export function useHostDiscovery(skipDiscovery: boolean = false) {
       setDiscovering(true);
 
       for (const baseUrl of DISCOVERY_URLS) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
         try {
           const testUrl = `${baseUrl}/tar1090/data/aircraft.json`;
           const response = await fetch(testUrl, {
             method: 'HEAD',
-            timeout: 2000,
-          } as RequestInit);
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
 
           if (response.ok) {
             setDiscoveredUrl(baseUrl);
@@ -25,6 +28,7 @@ export function useHostDiscovery(skipDiscovery: boolean = false) {
             return;
           }
         } catch (error) {
+          clearTimeout(timeoutId);
           // Continue to next URL
         }
       }

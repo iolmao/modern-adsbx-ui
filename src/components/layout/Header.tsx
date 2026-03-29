@@ -1,4 +1,4 @@
-import { Settings } from 'lucide-react';
+import { Settings, Table2 } from 'lucide-react';
 import { useAircraftStore } from '@/store/aircraftStore';
 import { useUIStore } from '@/store/uiStore';
 import { Button } from '@/components/ui/button';
@@ -15,15 +15,26 @@ export function Header() {
         <h1 className="text-xl font-semibold text-foreground">ADS-B Tracker</h1>
         <button
           onClick={() => setAircraftListOpen(true)}
-          className="text-sm text-muted-foreground font-mono underline decoration-dotted hover:text-foreground transition-colors cursor-pointer"
+          className="hidden md:block text-sm text-muted-foreground font-mono underline decoration-dotted hover:text-foreground transition-colors cursor-pointer"
         >
           {visibleCount} / {aircraft.length} aircraft
         </button>
       </div>
 
       <div className="flex items-center gap-4">
-        <ModeToggle />
+        <div className="hidden md:flex">
+          <ModeToggle />
+        </div>
         <ThemeToggle />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setAircraftListOpen(true)}
+          aria-label="Aircraft list"
+          className="md:hidden"
+        >
+          <Table2 className="h-5 w-5" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
