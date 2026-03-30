@@ -35,7 +35,7 @@ export const AircraftMarker = memo(({ aircraft, onClick }: AircraftMarkerProps) 
   // Use type from live feed, or fall back to db cache (populated lazily)
   const typeCode = aircraft.t ?? getCachedDbEntry(aircraft.hex)?.type;
   if (!aircraft.t) prefetchDbEntry(aircraft.hex);
-  const iconPath = getAircraftIcon(aircraft.category, typeCode);
+  const iconPath = getAircraftIcon(aircraft.category, typeCode, aircraft.r, aircraft.dbFlags);
   const color = aircraft.isEmergency ? EMERGENCY_COLOR : aircraftIconColor;
 
   return (
