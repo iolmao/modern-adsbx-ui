@@ -138,6 +138,25 @@ If the file is absent (e.g. no internet during install), the server starts norma
 
 ---
 
+## Flight Routes
+
+Origin and destination airports for flights are resolved from a local copy of the [standing-data](https://github.com/vradarserver/standing-data) database (CC0 licensed), downloaded automatically during `npm install`.
+
+The database is stored at `data/routes.csv.gz` and `data/airports-routes.csv.gz`, and loaded into memory when the server starts.
+
+> **Note:** This database is community-maintained and updated infrequently. Routes for **flag carriers and major airlines** are generally accurate. Routes for **low-cost carriers** (Ryanair, easyJet, Wizz Air, etc.) change often and may be outdated or missing — this is a known limitation of the data source, not a bug.
+
+**To update the database:**
+
+```bash
+rm data/routes.csv.gz data/airports-routes.csv.gz
+npm run download-routes
+```
+
+If the files are absent, the server starts normally and simply omits route information — no errors, no broken UI.
+
+---
+
 ## Custom Themes
 
 Themes are defined in `src/config/presets.json`. Each entry sets the map style, aircraft color, and trail color, and shows up as a card in the Settings panel.
